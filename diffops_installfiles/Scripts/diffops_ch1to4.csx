@@ -108,7 +108,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
-    ds_map_add(rowdata, ""value_range"", ""0-500%"");
+    ds_map_add(rowdata, ""value_range"", ""0-1000%;[-999]=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diffdwnpenalty"");
     array_push(formdata, rowdata);
 
@@ -120,7 +120,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
-    ds_map_add(rowdata, ""value_range"", ""0-500%"");
+    ds_map_add(rowdata, ""value_range"", ""0-1000%;INSTANT=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diffdwnrgn"");
     array_push(formdata, rowdata);
 
@@ -275,15 +275,15 @@ if (ch_no == 3)
 // Apply down penalty
 foreach (string scrName in damageLikes)
 {   
-    importGroup.QueueFindReplace(scrName, "global.maxhp[chartarget] / 2", "global.maxhp[chartarget] * global.diffdwnpenalty");
-    importGroup.QueueFindReplace(scrName, "global.maxhp[0] / 2", "global.maxhp[0] * global.diffdwnpenalty");
+    importGroup.QueueFindReplace(scrName, "global.maxhp[chartarget] / 2", "max(-999, global.maxhp[chartarget] * global.diffdwnpenalty)");
+    importGroup.QueueFindReplace(scrName, "global.maxhp[0] / 2", "max(-999, global.maxhp[0] * global.diffdwnpenalty)");
 }
 if (ch_no == 4) {
-    importGroup.QueueFindReplace("gml_GlobalScript_scr_down_partymember", "global.maxhp[_chartarget] / 2", "global.maxhp[_chartarget] * global.diffdwnpenalty");
+    importGroup.QueueFindReplace("gml_GlobalScript_scr_down_partymember", "global.maxhp[_chartarget] / 2", "max(-999, global.maxhp[_chartarget] * global.diffdwnpenalty)");
     string[] heavySmokers = {"1", "2", "3"};
     foreach (string smoker in heavySmokers)
     {
-        importGroup.QueueFindReplace("gml_Object_obj_incense_cloud_Other_15", $"global.maxhp[{smoker}] / 2", $"global.maxhp[{smoker}] * global.diffdwnpenalty");
+        importGroup.QueueFindReplace("gml_Object_obj_incense_cloud_Other_15", $"global.maxhp[{smoker}] / 2", $"max(-999, global.maxhp[{smoker}] * global.diffdwnpenalty)");
     }
 }
 
