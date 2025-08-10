@@ -27,13 +27,13 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
 importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function scr_gamestart\\(\\)\\s*{", @$"
     function scr_gamestart()
     {{
-        global.diffdmgmulti = 1;
-        global.diffdwnpenalty = 1 / 2;
-        global.diffvictoryres = 1 / 8;
-        global.diffdwnrgn = 1 / 8;
-        global.diffhitall = 0;
+        global.diff_damagemulti = 1;
+        global.diff_downdeficit = 1 / 2;
+        global.diff_victoryres = 1 / 8;
+        global.diff_downedregen = 1 / 8;
+        global.diff_hitall = 0;
         {(ch_no != 3 ? "" : @"
-        global.diffbatboarddmgmulti = -1;
+        global.diff_gameboarddmgx = -1;
         ")}
 
     ");
@@ -60,13 +60,13 @@ foreach (string scrName in loadLikes)
         ossafe_file_text_close(myfileid);
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
-        global.diffdmgmulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTIPLIER"", 1);
-        global.diffdwnpenalty = ini_read_real(""DIFFICULTY"", ""DOWN_PENALTY"", 1 / 2);
-        global.diffvictoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
-        global.diffdwnrgn = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
-        global.diffhitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
+        global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", 1);
+        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", 1 / 2);
+        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
+        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
+        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
         {(ch_no != 3 ? "" : @"
-        global.diffbatboarddmgmulti = ini_read_real(""DIFFICULTY"", ""BATTLEBOARD_DAMAGE_MULTIPLIER"", -1);
+        global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", -1);
         ")}
         ossafe_ini_close();
 
@@ -77,13 +77,13 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
     ossafe_file_text_close(myfileid);
 
     ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
-    ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTIPLIER"", global.diffdmgmulti);
-    ini_write_real(""DIFFICULTY"", ""DOWN_PENALTY"", global.diffdwnpenalty);
-    ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diffvictoryres);
-    ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diffdwnrgn);
-    ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diffhitall);
+    ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
+    ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
+    ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
+    ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
+    ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
     {(ch_no != 3 ? "" : @"
-    ini_write_real(""DIFFICULTY"", ""BATTLEBOARD_DAMAGE_MULTIPLIER"", global.diffbatboarddmgmulti);
+    ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
     ")}
     ossafe_ini_close();
     ");
@@ -103,38 +103,38 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
     ds_map_add(rowdata, ""value_range"", ""0-1000%;INF=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diffdmgmulti"");
+    ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
     ds_map_add(rowdata, ""value_range"", ""0-1000%;[-999]=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diffdwnpenalty"");
+    ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Victory Res"");
     ds_map_add(rowdata, ""value_range"", ""OFF=-1;0-100%"");
-    ds_map_add(rowdata, ""value_name"", ""diffvictoryres"");
+    ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
     ds_map_add(rowdata, ""value_range"", ""0-1000%;INSTANT=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diffdwnrgn"");
+    ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Hit.All"");
     ds_map_add(rowdata, ""value_range"", ""OFF=0;ON=1"");
-    ds_map_add(rowdata, ""value_name"", ""diffhitall"");
+    ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
     array_push(formdata, rowdata);
 
     {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
     ds_map_add(rowdata, ""value_range"", ""INHERIT=-1;0-1000%;INF=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diffbatboarddmgmulti"");
+    ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
     array_push(formdata, rowdata);
     ")}
 
@@ -160,7 +160,7 @@ foreach (string scrName in damageLikes)
 {   
     importGroup.QueueTrimmedLinesFindReplace(scrName, "hpdiff = tdamage;", @"
         origdamage = tdamage;
-        tdamage = ceil(tdamage * global.diffdmgmulti);
+        tdamage = ceil(tdamage * global.diff_damagemulti);
         hpdiff = tdamage;
         ");
     importGroup.QueueRegexFindReplace(scrName, "if \\(target == 3\\)\\s*{", @"
@@ -169,34 +169,34 @@ foreach (string scrName in damageLikes)
             tdamage = origdamage;
         ");
     importGroup.QueueTrimmedLinesFindReplace(scrName, "if (global.charaction[hpi] == 10)", @"
-        tdamage = ceil(tdamage * global.diffdmgmulti);
+        tdamage = ceil(tdamage * global.diff_damagemulti);
 
         if (global.charaction[hpi] == 10)
         ");
 }
 importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_all_overworld", "hpdiff = tdamage;", @"
-    tdamage = ceil(tdamage * global.diffdmgmulti);
+    tdamage = ceil(tdamage * global.diff_damagemulti);
     hpdiff = tdamage;
     ");
 if (ch_no == 1)
 {
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_laserscythe_Other_15", "global.hp[global.char[i]] = ceil(global.hp[global.char[i]] * 0.7);",
-        "global.hp[global.char[i]] = ceil(global.hp[global.char[i]] * power(0.7, global.diffdmgmulti));");
+        "global.hp[global.char[i]] = ceil(global.hp[global.char[i]] * power(0.7, global.diff_damagemulti));");
 }
 if (ch_no == 2)
 {
-    importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "if (global.hp[1] <= 10)", "if (global.hp[1] <= round(10 * global.diffdmgmulti))");
-    importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "global.hp[1] -= 10;", "global.hp[1] -= round(10 * global.diffdmgmulti);");
-    importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "global.hp[1] / 2", "(global.diffdmgmulti != 0 ? (global.hp[1] / power(2, 1 / global.diffdmgmulti)) : 0)");
+    importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "if (global.hp[1] <= 10)", "if (global.hp[1] <= round(10 * global.diff_damagemulti))");
+    importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "global.hp[1] -= 10;", "global.hp[1] -= round(10 * global.diff_damagemulti);");
+    importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "global.hp[1] / 2", "(global.diff_damagemulti != 0 ? (global.hp[1] / power(2, 1 / global.diff_damagemulti)) : 0)");
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "global.hp[1] -= final_damage_amount;", 
-        "global.hp[1] -= final_damage_amount * global.diffdmgmulti;");
+        "global.hp[1] -= final_damage_amount * global.diff_damagemulti;");
 }
 if (ch_no == 3)
 {
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_quizsequence_Other_13", "var _damage = irandom_range(30, 38);",
-        "var _damage = ceil(irandom_range(30, 38) * global.diffdmgmulti);");
+        "var _damage = ceil(irandom_range(30, 38) * global.diff_damagemulti);");
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_ch3_b4_chef_kris_Create_0", "global.hp[1] = clamp(global.hp[1] - damage_amount, 1, global.maxhp[1]);", @"
-        damage_amount = ceil(damage_amount * global.diffdmgmulti);
+        damage_amount = ceil(damage_amount * global.diff_damagemulti);
 
         global.hp[1] = clamp(global.hp[1] - damage_amount, 1, global.maxhp[1]);
     ");
@@ -206,8 +206,8 @@ if (ch_no == 4) {
     foreach (string limit in sandbagLimits)
     {
         importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", $"if (global.chapter == 4 && i_ex(obj_hammer_of_justice_enemy) && {limit} < 5)", 
-            $"if (global.chapter == 4 && i_ex(obj_hammer_of_justice_enemy) && {limit} < (5 * global.diffdmgmulti))");
-        importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", $"{limit} = 5;", $"{limit} = 5 * global.diffdmgmulti;");
+            $"if (global.chapter == 4 && i_ex(obj_hammer_of_justice_enemy) && {limit} < (5 * global.diff_damagemulti))");
+        importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", $"{limit} = 5;", $"{limit} = 5 * global.diff_damagemulti;");
     }
 }
 // Apply damage multiplier (Damage Over Time)
@@ -221,7 +221,7 @@ if (ch_no >= 2)
                 global.hp[4] = max(round(global.maxhp[4] / 3), global.hp[4] - floor(t_siner / 6));
             
             t_siner = t_siner % 6;
-            t_siner += global.diffdmgmulti;
+            t_siner += global.diff_damagemulti;
         }
 
         if (false)
@@ -229,7 +229,7 @@ if (ch_no >= 2)
     string poisonScrName = ch_no == 2 ? "gml_Object_obj_heroparent_Draw_0" : "gml_Object_obj_heroparent_Step_0";
     importGroup.QueueTrimmedLinesFindReplace(poisonScrName, "poisontimer++;", @"
         poisontimer++;
-        poisondmgtimer += global.diffdmgmulti;
+        poisondmgtimer += global.diff_damagemulti;
     ");
     importGroup.QueueTrimmedLinesFindReplace(poisonScrName, "global.hp[global.char[myself]]--;", 
         "global.hp[global.char[myself]] = max(1, global.hp[global.char[myself]] - floor(poisondmgtimer / 10));");
@@ -245,7 +245,7 @@ if (ch_no >= 2)
 if (ch_no == 4)
 {
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_incense_cloud_Other_15", "repeat (_r)", @"
-        _r = ceil(_r * global.diffdmgmulti);
+        _r = ceil(_r * global.diff_damagemulti);
         repeat (_r)
     ");
 }
@@ -253,7 +253,7 @@ if (ch_no == 4)
 // Apply BattleBoard damage multiplier
 if (ch_no == 3)
 {
-    const string batboarddmgmulti = "(global.diffbatboarddmgmulti < 0 ? global.diffdmgmulti : global.diffbatboarddmgmulti)";
+    const string batboarddmgmulti = "(global.diff_gameboarddmgx < 0 ? global.diff_damagemulti : global.diff_gameboarddmgx)";
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_board_puzzlebombbullet_Step_0", "myhealth -= other.damage;",
         $"myhealth -= other.damage * {batboarddmgmulti};");
     importGroup.QueueFindReplace("gml_Object_obj_quizsequence_Draw_0", "myhealth -= 2;",
@@ -275,23 +275,23 @@ if (ch_no == 3)
 // Apply down penalty
 foreach (string scrName in damageLikes)
 {   
-    importGroup.QueueFindReplace(scrName, "global.maxhp[chartarget] / 2", "max(-999, global.maxhp[chartarget] * global.diffdwnpenalty)");
-    importGroup.QueueFindReplace(scrName, "global.maxhp[0] / 2", "max(-999, global.maxhp[0] * global.diffdwnpenalty)");
+    importGroup.QueueFindReplace(scrName, "global.maxhp[chartarget] / 2", "max(-999, global.maxhp[chartarget] * global.diff_downdeficit)");
+    importGroup.QueueFindReplace(scrName, "global.maxhp[0] / 2", "max(-999, global.maxhp[0] * global.diff_downdeficit)");
 }
 if (ch_no == 4) {
-    importGroup.QueueFindReplace("gml_GlobalScript_scr_down_partymember", "global.maxhp[_chartarget] / 2", "max(-999, global.maxhp[_chartarget] * global.diffdwnpenalty)");
+    importGroup.QueueFindReplace("gml_GlobalScript_scr_down_partymember", "global.maxhp[_chartarget] / 2", "max(-999, global.maxhp[_chartarget] * global.diff_downdeficit)");
     string[] heavySmokers = {"1", "2", "3"};
     foreach (string smoker in heavySmokers)
     {
-        importGroup.QueueFindReplace("gml_Object_obj_incense_cloud_Other_15", $"global.maxhp[{smoker}] / 2", $"max(-999, global.maxhp[{smoker}] * global.diffdwnpenalty)");
+        importGroup.QueueFindReplace("gml_Object_obj_incense_cloud_Other_15", $"global.maxhp[{smoker}] / 2", $"max(-999, global.maxhp[{smoker}] * global.diff_downdeficit)");
     }
 }
 
 // Apply victory res - if VictoryRes is 0 then don't heal; additionally ensure the heal brings the character to at least 1 hp for low values of VictoryRes
-importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.maxhp[i] / 8", "global.diffvictoryres >= 0 ? max(1, global.maxhp[i] * global.diffvictoryres) : global.hp[i]");
+importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.maxhp[i] / 8", "global.diff_victoryres >= 0 ? max(1, global.maxhp[i] * global.diff_victoryres) : global.hp[i]");
 
 // Downed Regen
-importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_mnendturn", "healamt = ceil(global.maxhp[hptarget] / 8);", "healamt = ceil(global.maxhp[hptarget] * global.diffdwnrgn);");
+importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_mnendturn", "healamt = ceil(global.maxhp[hptarget] / 8);", "healamt = ceil(global.maxhp[hptarget] * global.diff_downedregen);");
 
 // Hit.All
 string[] singleHits = {"gml_Object_obj_overworldbulletparent_Other_15", "gml_Object_obj_collidebullet_Other_15", "gml_Object_obj_checkers_leap_Other_15"};
@@ -336,7 +336,7 @@ foreach (string scrName in singleHits)
 {
     importGroup.QueueTrimmedLinesFindReplace(scrName, "scr_damage();", @"
         {
-            if (global.diffhitall <= 0)
+            if (global.diff_hitall <= 0)
             {
                 scr_damage();
             }
@@ -350,7 +350,7 @@ foreach (string scrName in singleHits)
 if (ch_no == 2) {
     // TODO might be cleaner to add a scr_damage_all_proportional function
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_basicbullet_sneo_finale_Other_15", "if (target != 3)", @"
-        if (target != 3 && global.diffhitall > 0)
+        if (target != 3 && global.diff_hitall > 0)
         {
             if (global.inv < 0)
             {
@@ -374,13 +374,13 @@ if (ch_no == 2) {
             }
         }
 
-        if (target != 3 && global.diffhitall <= 0)
+        if (target != 3 && global.diff_hitall <= 0)
     ");
 }
 if (ch_no == 3) {
     // TODO might be cleaner to add a scr_damage_all_maxhp function
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_roaringknight_splitslash_Step_0", "if (target != 3)", @"
-        if (target != 3 && global.diffhitall > 0)
+        if (target != 3 && global.diff_hitall > 0)
         {
             if (global.inv < 0)
             {
@@ -404,10 +404,10 @@ if (ch_no == 3) {
             }
         }
 
-        if (target != 3 && global.diffhitall <= 0)
+        if (target != 3 && global.diff_hitall <= 0)
     ");
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_roaringknight_quickslash_big_Step_0", "if (target != 3)", @"
-        if (target != 3 && global.diffhitall > 0)
+        if (target != 3 && global.diff_hitall > 0)
         {
             if (global.inv < 0)
             {
@@ -431,7 +431,7 @@ if (ch_no == 3) {
             }
         }
 
-        if (target != 3 && global.diffhitall <= 0)
+        if (target != 3 && global.diff_hitall <= 0)
     ");
 }
 
