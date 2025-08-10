@@ -1,6 +1,6 @@
 # Difficulty Options For Deltarune
 Mod that adds difficulty options to DELTARUNE.
- - Tested as far as half-way through chapter 3.
+ - Tested chapters 1 to 3 (complete), chapter 4 in progress (early dark world).
 
 ## Download
 Check [releases](https://github.com/Emmehehe/DifficultyOptionsForDeltarune/releases).
@@ -19,31 +19,39 @@ Check [releases](https://github.com/Emmehehe/DifficultyOptionsForDeltarune/relea
 
 ## What options do?
 #### Damage Multi
-Multiply all incoming damage by this value. 100% = normal damage, 50% = half damage, 200% = double damage, etc.
+Multiply all incoming damage by this value.
 - Default: 100%
 - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
-- For wierd attacks that deal damage as a percentage of the current HP, instead uses exponential logic to determine damage scaling. e.g. An attack that normally does 1/2 your HP in vanilla, instead does 70.7% with double damage, and 1/4 with half damage. The calculation is thus: `dmgratio = vanilladmgratio^(1/dmgmulti)`.
+- For weird attacks that deal damage as a percentage of the current HP, instead uses exponential logic to determine damage scaling. e.g. An attack that normally does 1/2 your HP in vanilla, instead does 70.7% with double damage, and 1/4 with half damage. The calculation is thus: `dmgratio = vanilladmgratio^(1/dmgmulti)`.
 - For any damage over time effects, either tick faster, or apply more damage, or combination of both - where appropriate - proportionate with the multiplier that has been set.
 
 #### Down Deficit
-When a character is 'downed', their health is put as far into the negatives as half their maximum HP. This option lets you override that. 
+When a character is 'downed', their health is put as far into the negatives as 50% of their max HP. This option lets you override that. 
 - Default: 50%
 
 #### Victory Res
-When a battle is won, the game automatically resurrects any downed characters and heals them to 1/8th HP. This option lets you override that. 12.5% = normal victory res, 25% = 1/4th res, 100% = full res, etc.
+When a battle is won, the game automatically resurrects any downed characters and heals them to 12.5% of their max HP. This option lets you override that.
 - Default: 12.5%
-- 0% ought to mean the downed character's HP is brought up to 0 (from negative), but I've not tested it.
 - OFF: Can also be switched off entirely by reducing past 0%.
+
+#### Downed Regen
+Each turn that a character remains downed, they regen 12.5% of their max HP. This option lets you override that.
+- Default: 12.5%
+
+#### Hit.All
+When switched on, hits that target a single character instead hits the entire party. 
+- Default: OFF
+- For no-hit runs, combine this setting with `Damage Multi=INF`.
+- Warning: This option has not had a thorough test. I've only tested one encounter per chapter.
 
 <details> 
   <summary><strong>CHAPTER 3 SPOILERS...</strong></summary>
 
-  > #### Gameboard Dmg Multi
-  > Multiplier for the damage in the chapter 3 game boards. 100% = normal damage, 50% = half damage, 200% = double damage, etc.
-  > - Warning: This entire option hasn't been tested yet!
+  > #### Gameboard Dmg X
+  > Multiplier for the damage in the chapter 3 game boards.
   > - Only shows up in the menu in chapter 3.
   > - Default: INHERIT
-  > - INHERIT - Can also be set to inherit from 'Damage Multi' by reducing past 0%.
+  > - INHERIT - Can also be set to inherit from the 'Damage Multi' setting by reducing past 0%.
   > - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
 </details>
 
@@ -53,6 +61,4 @@ Will my vanilla saves work with this mod and vice-versa?
 > This just reads and writes to a new .ini file. So no change to vanilla save data.
 
 Is this compatible with X mod?
-> **I can't garauntee anything, but most likely.**
-> The mod install script makes changes to specific lines of vanilla damage code, so anything that doesn't mess with those should be compatible.
-> The mod menu script makes changes to the dark world menu logic and draw code, so disable the mod menu script if you're getting compatibility issues with the dark world menu.
+> **I can't garauntee anything.** This mod makes specific line edits to the dark world menu & various damage scripts, so those areas will be the source of any potential conflicts. Any mods that don't affect those areas should be ok?
