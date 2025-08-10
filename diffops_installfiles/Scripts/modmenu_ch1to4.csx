@@ -334,6 +334,9 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                         }
                     }
 
+                    var value_name = ds_map_find_value(row_data, ""value_name"");
+                    var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
+
                     if (isAllLabels) {
                         global.modssubmenuselected = false;
 
@@ -352,6 +355,8 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                                 }
                             }
                         }
+
+                        variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
                     }
                 }
             }
