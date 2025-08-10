@@ -132,7 +132,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg Multi"");
+    ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
     ds_map_add(rowdata, ""value_range"", ""INHERIT=-1;0-1000%;INF=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diffbatboarddmgmulti"");
     array_push(formdata, rowdata);
