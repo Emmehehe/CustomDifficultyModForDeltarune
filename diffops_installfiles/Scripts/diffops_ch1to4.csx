@@ -30,6 +30,8 @@ importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function sc
         global.diffdmgmulti = 1;
         global.diffdwnpenalty = 1 / 2;
         global.diffvictoryres = 1 / 8;
+        global.diffdwnrgn = 1 / 8;
+        global.diffhitall = 0;
         {(ch_no != 3 ? "" : @"
         global.diffbatboarddmgmulti = -1;
         ")}
@@ -61,6 +63,8 @@ foreach (string scrName in loadLikes)
         global.diffdmgmulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTIPLIER"", 1);
         global.diffdwnpenalty = ini_read_real(""DIFFICULTY"", ""DOWN_PENALTY"", 1 / 2);
         global.diffvictoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
+        global.diffdwnrgn = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
+        global.diffhitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
         {(ch_no != 3 ? "" : @"
         global.diffbatboarddmgmulti = ini_read_real(""DIFFICULTY"", ""BATTLEBOARD_DAMAGE_MULTIPLIER"", -1);
         ")}
@@ -76,6 +80,8 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
     ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTIPLIER"", global.diffdmgmulti);
     ini_write_real(""DIFFICULTY"", ""DOWN_PENALTY"", global.diffdwnpenalty);
     ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diffvictoryres);
+    ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diffdwnrgn);
+    ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diffhitall);
     {(ch_no != 3 ? "" : @"
     ini_write_real(""DIFFICULTY"", ""BATTLEBOARD_DAMAGE_MULTIPLIER"", global.diffbatboarddmgmulti);
     ")}
@@ -112,6 +118,18 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     ds_map_add(rowdata, ""value_name"", ""diffvictoryres"");
     array_push(formdata, rowdata);
 
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
+    ds_map_add(rowdata, ""value_range"", ""0-500%"");
+    ds_map_add(rowdata, ""value_name"", ""diffdwnrgn"");
+    array_push(formdata, rowdata);
+
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Hit.All"");
+    ds_map_add(rowdata, ""value_range"", ""OFF=0;ON=1"");
+    ds_map_add(rowdata, ""value_name"", ""diffhitall"");
+    array_push(formdata, rowdata);
+
     {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg Multi"");
@@ -126,17 +144,16 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 ");
 
 string[] damageLikes = {"gml_GlobalScript_scr_damage"};
-string[] ch2UpDamageLikes = {"gml_GlobalScript_scr_damage_proportional", "gml_GlobalScript_scr_damage_sneo_final_attack"};
-string[] ch3DamageLikes = {"gml_GlobalScript_scr_damage_fixed", "gml_GlobalScript_scr_damage_maxhp"};
 if (ch_no >= 2)
 {
+    string[] ch2UpDamageLikes = {"gml_GlobalScript_scr_damage_proportional", "gml_GlobalScript_scr_damage_sneo_final_attack"};
     damageLikes = damageLikes.Concat(ch2UpDamageLikes).ToArray();
 }
 if (ch_no == 3)
 {
+    string[] ch3DamageLikes = {"gml_GlobalScript_scr_damage_fixed", "gml_GlobalScript_scr_damage_maxhp"};
     damageLikes = damageLikes.Concat(ch3DamageLikes).ToArray();
 }
-
 
 // Apply damage multiplier
 foreach (string scrName in damageLikes)
@@ -272,6 +289,151 @@ if (ch_no == 4) {
 
 // Apply victory res - if VictoryRes is 0 then don't heal; additionally ensure the heal brings the character to at least 1 hp for low values of VictoryRes
 importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.maxhp[i] / 8", "global.diffvictoryres >= 0 ? max(1, global.maxhp[i] * global.diffvictoryres) : global.hp[i]");
+
+// Downed Regen
+importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_mnendturn", "healamt = ceil(global.maxhp[hptarget] / 8);", "healamt = ceil(global.maxhp[hptarget] * global.diffdwnrgn);");
+
+// Hit.All
+string[] singleHits = {"gml_Object_obj_overworldbulletparent_Other_15", "gml_Object_obj_collidebullet_Other_15", "gml_Object_obj_checkers_leap_Other_15"};
+if (ch_no == 1) {
+    string[] ch1SingleHits = {"gml_Object_obj_regularbullet_permanent_Other_15", "gml_Object_obj_lancerbike_Other_15", "gml_Object_obj_lancerbike_neo_Other_15"};
+    singleHits = singleHits.Concat(ch1SingleHits).ToArray();
+}
+if (ch_no == 2) {
+    string[] ch2SingleHits = {"gml_Object_obj_mettaton_bomb_hitbox_Other_15", "gml_Object_obj_lancerbike_Other_15", "gml_Object_obj_baseenemy_Step_0", "gml_Object_obj_omawaroid_vaccine_Other_15",
+        "gml_Object_obj_viro_needle_Other_15", "gml_Object_obj_yarnbullet_Other_15", "gml_Object_obj_tasque_soundwave_Other_15", "gml_Object_obj_tm_quizzap_Other_15",
+        "gml_Object_obj_queen_social_media_Other_15", "gml_Object_obj_queen_wine_attack_droplet_Other_15", "gml_Object_obj_queen_wine_attack_bottom_hurtbox_Other_15",
+        "gml_Object_obj_queen_winebubble_Other_15", "gml_Object_obj_sneo_elevator_electric_ball_Other_15", "gml_Object_obj_shrinktangle_Step_0", "gml_Object_obj_sneo_phonehand_master_hurtbox_Other_15",
+        "gml_Object_obj_thrash_duck_bullet_Other_15"};
+    singleHits = singleHits.Concat(ch2SingleHits).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3SingleHits = {"gml_GlobalScript_scr_damage_manual", "gml_Object_obj_bullet_dice_Other_15", "gml_Object_obj_knight_roaring_star_Other_15", "gml_Object_obj_susiezilla_statue_Alarm_0",
+        "gml_Object_obj_knight_weird_circle_bullet_Other_15", "gml_Object_obj_tenna_enemy_Step_0", "gml_Object_obj_tenna_enemy_Step_0", "gml_Object_obj_regularbullet_elnina_Other_15",
+        "gml_Object_obj_knight_diamondswordbullet_ext_Other_15", "gml_Object_obj_rouxls_yarnball_Other_15", "gml_Object_obj_elnina_snowring_Other_15", "gml_Object_obj_knight_enemy_Other_12",
+        "gml_Object_obj_snowflake_ult_bullet_Other_15", "gml_Object_obj_rouxls_biplane_flag_Other_15", "gml_Object_obj_knight_pointing_starchild_Other_15",
+        "gml_Object_obj_knight_pointing_starchild_Other_15", "gml_Object_obj_precipitation_bullet_parent_Other_15", "gml_Object_obj_bullet_rain_Other_15", "gml_Object_obj_elnina_raindrop_Other_15",
+        "gml_Object_obj_bullet_sun_Other_15", "gml_Object_obj_rouxls_helicopter_hitbox_Other_15", "gml_Object_obj_tenna_allstars_bullet_Other_15", "gml_Object_obj_elnina_bouncingbullet_Other_15",
+        "gml_Object_obj_tm_quizzap_Other_15", "gml_Object_obj_bullet_snow_Other_15", "gml_Object_obj_rainwater_Other_15", "gml_Object_obj_bullet_homing_Other_15",
+        "gml_Object_obj_knight_pointing_star_Other_15", "gml_Object_obj_lanino_solar_system_Other_15", "gml_Object_obj_yarnsnake_bullet_Other_15", "gml_Object_obj_knight_bullethell_bullet2_Other_15",
+        "gml_Object_obj_bullet_moon_Other_15", "gml_Object_obj_watercooler_enemy_Other_12", "gml_Object_obj_roaringknight_slash_Other_15", "gml_Object_obj_bullet_submoon_Other_15"};
+    singleHits = singleHits.Concat(ch3SingleHits).ToArray();
+}
+if (ch_no == 4) {
+    string[] ch4SingleHits = {"gml_Object_obj_incense_bullet_Other_15", "gml_Object_obj_climb_kris_Step_0", "gml_Object_obj_rotating_object_parent_new_Other_15",
+        "gml_Object_obj_holywater_act_line_Other_15", "gml_Object_obj_yarnsnake_bullet_Other_15", "gml_Object_obj_gerson_shell_pinball_Other_15", "gml_Object_obj_regularbullet_elnina_Other_15",
+        "gml_Object_obj_spearshot_Other_10", "gml_Object_obj_spearshot_Other_10", "gml_Object_obj_gerson_hammer_bro_hammer_Other_15", "gml_Object_obj_darkness_bullet_Other_15",
+        "gml_Object_obj_organ_enemy_vertical_pillar_Other_15", "gml_Object_obj_mizzle_spotlight_eye_Other_15", "gml_Object_obj_holywatercooler_enemy_Other_12",
+        "gml_Object_obj_ghosthouse_jackolantern_merciful_Other_15", "gml_Object_obj_gerson_hammer_bounce_left_Other_15", "gml_Object_obj_overworld_knight_sword2_Other_15",
+        "gml_Object_obj_darkshape_bigblast_Other_15", "gml_Object_obj_overworld_knight_sword1_Other_15", "gml_Object_obj_mike_hairball_Other_15",
+        "gml_Object_obj_ghosthouse_jackolantern_merciful_old_Other_15", "gml_Object_obj_vertical_dark_shockwave_hurtbox_Other_15", "gml_Object_obj_bullet_dice_Other_15",
+        "gml_Object_obj_gerson_swing_down_Other_15", "gml_Object_obj_giant_hammer_Step_0", "gml_Object_obj_gerson_hammer_bounce_down_Other_15", "gml_Object_obj_gerson_growtangle_telegraph_new_Other_15",
+        "gml_Object_obj_gh_fireball_bouncy_Other_15", "gml_Object_obj_incense_bullet_fire_Other_15", "gml_Object_obj_tm_quizzap_Other_15", "gml_Object_obj_ow_pathingenemy_Other_15",
+        "gml_Object_obj_lightbullet_Other_15", "gml_Object_obj_elnina_bouncingbullet_Other_15", "gml_Object_obj_gh_fireball_linear_Other_15", "gml_Object_obj_mike_spike_Other_15"};
+    singleHits = singleHits.Concat(ch4SingleHits).ToArray();
+}
+foreach (string scrName in singleHits)
+{
+    importGroup.QueueTrimmedLinesFindReplace(scrName, "scr_damage();", @"
+        {
+            if (global.diffhitall <= 0)
+            {
+                scr_damage();
+            }
+            else
+            {
+                scr_damage_all();
+            }
+        }
+    ");
+}
+if (ch_no == 2) {
+    // TODO might be cleaner to add a scr_damage_all_proportional function
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_basicbullet_sneo_finale_Other_15", "if (target != 3)", @"
+        if (target != 3 && global.diffhitall > 0)
+        {
+            if (global.inv < 0)
+            {
+                scr_damage_cache();
+                remdamage = damage;
+                _temptarget = target;
+
+                for (ti = 0; ti < 3; ti += 1)
+                {
+                    global.inv = -1;
+                    damage = remdamage;
+                    target = ti;
+
+                    if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0)
+                        scr_damage_proportional();
+                }
+
+                global.inv = global.invc * 40;
+                target = _temptarget;
+                scr_damage_check();
+            }
+        }
+
+        if (target != 3 && global.diffhitall <= 0)
+    ");
+}
+if (ch_no == 3) {
+    // TODO might be cleaner to add a scr_damage_all_maxhp function
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_roaringknight_splitslash_Step_0", "if (target != 3)", @"
+        if (target != 3 && global.diffhitall > 0)
+        {
+            if (global.inv < 0)
+            {
+                scr_damage_cache();
+                remdamage = damage;
+                _temptarget = target;
+
+                for (ti = 0; ti < 3; ti += 1)
+                {
+                    global.inv = -1;
+                    damage = remdamage;
+                    target = ti;
+
+                    if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0)
+                        scr_damage_maxhp(0.66, false, true);
+                }
+
+                global.inv = global.invc * 40;
+                target = _temptarget;
+                scr_damage_check();
+            }
+        }
+
+        if (target != 3 && global.diffhitall <= 0)
+    ");
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_roaringknight_quickslash_big_Step_0", "if (target != 3)", @"
+        if (target != 3 && global.diffhitall > 0)
+        {
+            if (global.inv < 0)
+            {
+                scr_damage_cache();
+                remdamage = damage;
+                _temptarget = target;
+
+                for (ti = 0; ti < 3; ti += 1)
+                {
+                    global.inv = -1;
+                    damage = remdamage;
+                    target = ti;
+
+                    if (global.hp[global.char[ti]] > 0 && global.char[ti] != 0)
+                        scr_damage_maxhp(1.25);
+                }
+
+                global.inv = global.invc * 40;
+                target = _temptarget;
+                scr_damage_check();
+            }
+        }
+
+        if (target != 3 && global.diffhitall <= 0)
+    ");
+}
 
 // Finish edit
 importGroup.Import();
