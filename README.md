@@ -1,6 +1,5 @@
-# Difficulty Options For Deltarune
+# Custom Difficulty For Deltarune
 Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brutal.
- - Tested chapters 1 to 3 (complete), chapter 4 in progress (about half-way).
 
 <img src="https://github.com/user-attachments/assets/9a01549b-1ce8-4e94-ad12-e4dc05a860d4" width="480" />
 
