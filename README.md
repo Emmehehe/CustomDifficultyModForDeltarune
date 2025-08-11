@@ -1,16 +1,16 @@
-# Custom Difficulty For Deltarune
+# Custom Difficulty Mod For Deltarune
 Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brutal.
 
 <img src="https://github.com/user-attachments/assets/9a01549b-1ce8-4e94-ad12-e4dc05a860d4" width="480" />
 
 ## Download
-Check [releases](https://github.com/Emmehehe/DifficultyOptionsForDeltarune/releases).
+Check [releases](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases).
 
 ## Installation
 1. (optional) Backup your `DELTARUNE\` folder.
 2. Copy `diffops_installfiles\` (for Windows & MacOS) & `diffops_installer_windows.bat` (for Windows only) into your `DELTARUNE\` folder.
 3. Run `diffops_installer_windows.bat` (if on Windows).
-   - If you're on MacOS, you could try the script from [this pull request](https://github.com/Emmehehe/DifficultyOptionsForDeltarune/pull/2) ([branch for DL](https://github.com/Emmehehe/DifficultyOptionsForDeltarune/tree/add-installer-for-macos)). Let me know if it works.
+   - If you're on MacOS, you could try the script from [this pull request](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/pull/2) ([branch for DL](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/tree/add-installer-for-macos)). Let me know if it works.
    - Or you can manually apply the scripts to each chapter file using [UndertaleModTool](https://github.com/UnderminersTeam/UndertaleModTool/releases). Scripts > Run other script...
 4. Done! You can remove the installer & install files now if you want.
 
