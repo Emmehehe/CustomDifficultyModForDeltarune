@@ -18,7 +18,9 @@ if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, Ti
 ushort ch_no = ushort.Parse(Regex.Match(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)).Groups[1].Captures[0].Value);
 
 // Begin edit
-ScriptMessage($"Adding difficulty options to '{displayName}'...");
+ScriptMessage($"Adding custom difficulty to '{displayName}'...");
+
+// Code edits
 UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
     ThrowOnNoOpFindReplace = true
 };
@@ -91,8 +93,8 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
 // Add mod menu
 importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     
-    if (!variable_instance_exists(global, ""modsmenu_data""))
-        global.modsmenu_data = array_create(0);
+    if (!variable_instance_exists(global, ""modmenu_data""))
+        global.modmenu_data = array_create(0);
 
     var menudata = ds_map_create();
     ds_map_add(menudata, ""title_en"", ""Difficulty"");
@@ -140,7 +142,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     ds_map_add(menudata, ""form"", formdata);
 
-    array_push(global.modsmenu_data, menudata);
+    array_push(global.modmenu_data, menudata);
 ");
 
 string[] damageLikes = {"gml_GlobalScript_scr_damage"};
@@ -437,4 +439,4 @@ if (ch_no == 3) {
 
 // Finish edit
 importGroup.Import();
-ScriptMessage($"Success: Difficulty options added to '{displayName}'!");
+ScriptMessage($"Success: Custom difficulty added to '{displayName}'!");
