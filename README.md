@@ -8,8 +8,8 @@ Check [releases](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/rel
 
 ## Installation
 1. (optional) Backup your `DELTARUNE\` folder.
-2. Copy `diffops_installfiles\` (for Windows & MacOS) & `diffops_installer_windows.bat` (for Windows only) into your `DELTARUNE\` folder.
-3. Run `diffops_installer_windows.bat` (if on Windows).
+2. Copy `customdifficulty_installfiles\` (for Windows & MacOS) & `customdifficulty_installer_windows.bat` (for Windows only) into your `DELTARUNE\` folder.
+3. Run `customdifficulty_installer_windows.bat` (if on Windows).
    - If you're on MacOS, you could try the script from [this pull request](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/pull/2) ([branch for DL](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/tree/add-installer-for-macos)). Let me know if it works.
    - Or you can manually apply the scripts to each chapter file using [UndertaleModTool](https://github.com/UnderminersTeam/UndertaleModTool/releases). Scripts > Run other script...
 4. Done! You can remove the installer & install files now if you want.
