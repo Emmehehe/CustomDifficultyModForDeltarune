@@ -34,6 +34,7 @@ importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function sc
         global.diff_victoryres = 1 / 8;
         global.diff_downedregen = 1 / 8;
         global.diff_hitall = 0;
+        global.diff_iframes = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = -1;
         ")}
@@ -67,6 +68,7 @@ foreach (string scrName in loadLikes)
         global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
         global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
         global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
+        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", 1);
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", -1);
         ")}
@@ -84,6 +86,7 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
     ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
     ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
     ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
+    ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
     {(ch_no != 3 ? "" : @"
     ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
     ")}
@@ -130,6 +133,12 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     ds_map_add(rowdata, ""title_en"", ""Hit.All"");
     ds_map_add(rowdata, ""value_range"", ""OFF=0;ON=1"");
     ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
+    array_push(formdata, rowdata);
+
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""I-Frames"");
+    ds_map_add(rowdata, ""value_range"", ""0-1000%;"");
+    ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
     array_push(formdata, rowdata);
 
     {(ch_no != 3 ? "" : @"
@@ -435,6 +444,43 @@ if (ch_no == 3) {
 
         if (target != 3 && global.diff_hitall <= 0)
     ");
+}
+
+// I-Frames
+string[] iFramers = {"gml_GlobalScript_scr_damage", "gml_GlobalScript_scr_damage_all", "gml_GlobalScript_scr_damage_all_overworld"};
+if (ch_no == 1) {
+    string[] ch1IFramers = {"gml_Object_obj_laserscythe_Other_15"};
+    iFramers = iFramers.Concat(ch1IFramers).ToArray();
+}
+if (ch_no == 2) {
+    string[] ch2IFramers = {"gml_Object_obj_basicbullet_sneo_finale_Other_15", "gml_Object_obj_spamton_neo_enemy_Other_12"};
+    iFramers = iFramers.Concat(ch2IFramers).ToArray();
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_fakeheart_Create_0", "global.inv = 300", "global.inv = global.diff_iframes * 300");
+}
+if (ch_no >= 2) {
+    string[] ch2to4IFramers = {"gml_GlobalScript_scr_damage_sneo_final_attack", "gml_GlobalScript_scr_damage_proportional", "gml_GlobalScript_scr_weaken_party"};
+    iFramers = iFramers.Concat(ch2to4IFramers).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3IFramers = {"gml_Object_obj_roaringknight_splitslash_Step_0", "gml_Object_obj_roaringknight_quickslash_big_Step_0", "gml_GlobalScript_scr_damage_fixed",
+    "gml_GlobalScript_scr_damage_maxhp", "gml_Object_obj_tenna_enemy_Step_0", "gml_Object_obj_knight_enemy_Other_12", "gml_Object_obj_watercooler_enemy_Other_12"};
+    iFramers = iFramers.Concat(ch3IFramers).ToArray();
+    importGroup.QueueFindReplace("gml_Object_obj_tenna_zoom_Step_0", "global.inv = 30", "global.inv = global.diff_iframes * 30");
+}
+if (ch_no == 4) {
+    string[] ch4IFramers = {"gml_Object_obj_mike_raindrop_Other_15", "gml_Object_obj_holywatercooler_enemy_Other_12"};
+    iFramers = iFramers.Concat(ch4IFramers).ToArray();
+    importGroup.QueueFindReplace("gml_Object_obj_gerson_fakeheart_Create_0", "global.inv = 300", "global.inv = global.diff_iframes * 300");
+    importGroup.QueueFindReplace("gml_Object_obj_sound_of_justice_enemy_Step_0", "global.inv = 29", "global.inv = global.diff_iframes * 29");
+    importGroup.QueueFindReplace("gml_Object_obj_ow_pathingenemy_Other_15", "global.inv = 60", "global.inv = global.diff_iframes * 60");
+    importGroup.QueueFindReplace("gml_Object_obj_hammer_of_justice_enemy_Step_0", "global.inv = 19", "global.inv = global.diff_iframes * 19");
+    importGroup.QueueFindReplace("gml_Object_obj_small_jackolantern_Other_15", "global.inv = min(global.inv, 10)", "global.inv = min(global.inv, global.diff_iframes * 10)");
+    importGroup.QueueFindReplace("gml_Object_obj_ghosthouse_jackolantern_Other_15", "global.inv = min(global.inv, 10 - floor(hits / 2))",
+        "global.inv = min(global.inv, global.diff_iframes * (10 - floor(hits / 2)))");
+}
+foreach (string scrName in iFramers)
+{
+    importGroup.QueueFindReplace(scrName, "global.inv = global.invc", "global.inv = global.diff_iframes * global.invc");
 }
 
 // Finish edit
