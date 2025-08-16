@@ -167,7 +167,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         
         for (var i = global.modmenuno; i < array_length(global.modmenu_data); i++)
         {{
-            allmodmenus += string_upper({ds_map_find_value_lang("global.modmenu_data[i]", @"""title""")}) + ""        "";
+            allmodmenus += string_upper({ds_map_find_value_lang("global.modmenu_data[i]", @"""title""")}) + (i + 1 < array_length(global.modmenu_data) ? ""        "" : """");
         }}
 
         if (!surface_exists(surf_modtitles))
@@ -180,7 +180,16 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         if (isMenuLonely || !isSubmenu)
         {{
             draw_set_color(c_white);
-            draw_text(0, 0, allmodmenus);
+            if (isMenuLonely)
+            {{
+                draw_set_halign(fa_center);
+                draw_text(205, 0, allmodmenus);
+                draw_set_halign(fa_left);
+            }}
+            else
+            {{
+                draw_text(0, 0, allmodmenus);
+            }}
         }}
         else
         {{
