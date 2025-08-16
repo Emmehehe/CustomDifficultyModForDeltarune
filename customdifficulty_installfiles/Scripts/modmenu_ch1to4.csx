@@ -63,6 +63,7 @@ UndertaleTexturePageItem pg_modsbt1 = AddNewTexturePageItem(0, 0, 33, 24);
 UndertaleTexturePageItem pg_modsbt2 = AddNewTexturePageItem(0, 24, 33, 24);
 UndertaleTexturePageItem pg_modsbt3 = AddNewTexturePageItem(0, 48, 33, 24);
 UndertaleTexturePageItem pg_modsdesc = AddNewTexturePageItem(33, 0, 35, 18);
+UndertaleTexturePageItem pg_modsfade = AddNewTexturePageItem(33, 18, 35, 35);
 
 // add 'mods' button
 {
@@ -78,7 +79,7 @@ UndertaleTexturePageItem pg_modsdesc = AddNewTexturePageItem(33, 0, 35, 18);
     var sItem = new UndertaleSprite { Name = name, Width = width, Height = height, MarginLeft = marginLeft, MarginRight = marginRight, MarginTop = marginTop, MarginBottom = marginBottom };
 
     UndertaleTexturePageItem[] spriteTextures = { pg_modsbt1, pg_modsbt2, pg_modsbt3 };
-    foreach (var spriteTexture in spriteTextures) 
+    foreach (var spriteTexture in spriteTextures)
     {
         sItem.Textures.Add(new UndertaleSprite.TextureEntry() { Texture = spriteTexture });
     }
@@ -89,6 +90,26 @@ UndertaleTexturePageItem pg_modsdesc = AddNewTexturePageItem(33, 0, 35, 18);
 {
     UndertaleSprite spr_darkmenudesc = Data.Sprites.ByName("spr_darkmenudesc");
     spr_darkmenudesc.Textures.Add(new UndertaleSprite.TextureEntry() { Texture = pg_modsdesc });
+}
+
+// add modtitles fade
+{
+    var name = Data.Strings.MakeString("spr_darkmodsfade");
+    uint width = 35;
+    uint height = 35;
+    ushort marginLeft = 0;
+    int marginRight = (int)width - 1;
+    ushort marginTop = 0;
+    int marginBottom = (int)height - 1;
+
+    var sItem = new UndertaleSprite { Name = name, Width = width, Height = height, MarginLeft = marginLeft, MarginRight = marginRight, MarginTop = marginTop, MarginBottom = marginBottom };
+
+    UndertaleTexturePageItem[] spriteTextures = { pg_modsfade };
+    foreach (var spriteTexture in spriteTextures)
+    {
+        sItem.Textures.Add(new UndertaleSprite.TextureEntry() { Texture = spriteTexture });
+    }
+    Data.Sprites.Add(sItem);
 }
 
 // Code edits
@@ -104,6 +125,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @"
     global.modsubmenuselected = false;
     global.modsubmenuscroll = 0;
     global.modmenu_data = array_create(0);
+    surf_modtitles = -1;
 ");
 
 Func<string,string,string> ds_map_find_value_lang =
@@ -147,19 +169,31 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         {{
             allmodmenus += string_upper({ds_map_find_value_lang("global.modmenu_data[i]", @"""title""")}) + ""        "";
         }}
+
+        if (!surface_exists(surf_modtitles))
+        {{
+            surf_modtitles = surface_create(410, 35);
+        }}
+        surface_set_target(surf_modtitles);
+        draw_clear_alpha(c_black, 0);
         
         if (isMenuLonely || !isSubmenu)
         {{
             draw_set_color(c_white);
-            draw_text(xx + 110, yy + 110, allmodmenus);
+            draw_text(0, 0, allmodmenus);
         }}
         else
         {{
             draw_set_color(c_gray);
-            draw_text(xx + 110, yy + 110, allmodmenus);
+            draw_text(0, 0, allmodmenus);
             draw_set_color(c_orange);
-            draw_text(xx + 110, yy + 110, string_upper({ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""title""")}));
+            draw_text(0, 0, string_upper({ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""title""")}));
         }}
+
+        draw_sprite(spr_darkmodsfade, 0, 410 - 35, 0);
+
+        surface_reset_target();
+        draw_surface(surf_modtitles, xx + 110, yy + 110);
 
         if (!isSubmenu)
             draw_sprite(spr_heart, 0, xx + 85, yy + 120);
