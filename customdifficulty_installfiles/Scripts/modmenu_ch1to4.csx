@@ -198,45 +198,49 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
             draw_set_color(c_gray);
 
         var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
-        for (var i = global.modsubmenuscroll; i < min(global.modsubmenuscroll + 7, array_length(form_data) + 1 /* (back button) */); i++)
+
+        if (array_length(form_data) >= 0)
         {{
-            if (i >= array_length(form_data))
+            for (var i = global.modsubmenuscroll; i < min(global.modsubmenuscroll + 7, array_length(form_data) + 1 /* (back button) */); i++)
             {{
-                draw_set_color(c_white);
-                draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({back_text})); // Back
-                continue;
-            }}
+                if (i >= array_length(form_data))
+                {{
+                    draw_set_color(c_white);
+                    draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({back_text})); // Back
+                    continue;
+                }}
 
-            if (global.modsubmenuselected && global.modsubmenuno == i)
-                draw_set_color(c_yellow);
-            else
-                draw_set_color(c_white);
+                if (global.modsubmenuselected && global.modsubmenuno == i)
+                    draw_set_color(c_yellow);
+                else
+                    draw_set_color(c_white);
 
-            var row_data = form_data[i];
-            draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
+                var row_data = form_data[i];
+                draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
 
-            var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-            var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
-            var valueString = """";
+                var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
+                var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
+                var valueString = """";
 
-            for (var j = 0; j < array_length(ranges); j++) {{
-                var range = ranges[j];
-                if (string_ends_with(range, ""%"")) {{
-                    var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                    if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
-                        valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
-                        break;
-                    }}
-                }} else if (string_pos(""="", range)) {{
-                    var labelValue = string_split(range, ""="");
-                    if (value == real(labelValue[1]) || j+1 == array_length(ranges)) {{
-                        valueString = labelValue[0];
-                        break;
+                for (var j = 0; j < array_length(ranges); j++) {{
+                    var range = ranges[j];
+                    if (string_ends_with(range, ""%"")) {{
+                        var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                        if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
+                            valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
+                            break;
+                        }}
+                    }} else if (string_pos(""="", range)) {{
+                        var labelValue = string_split(range, ""="");
+                        if (value == real(labelValue[1]) || j+1 == array_length(ranges)) {{
+                            valueString = labelValue[0];
+                            break;
+                        }}
                     }}
                 }}
-            }}
 
-            draw_text(_selectXPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline(valueString));
+                draw_text(_selectXPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline(valueString));
+            }}
         }}
 
         if (isSubmenu)
@@ -289,13 +293,14 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
         }} else if (!global.modsubmenuselected) {{
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var form_length = ds_map_exists(global.modmenu_data[global.modmenuno], ""form"") ? array_length(form_data) : 0;
-            // back button
-            form_length++;
 
             if (form_length <= 0) {{
                 global.modsubmenuno = -1;
                 global.modsubmenuscroll = 0;
             }}
+
+            // back button
+            form_length++;
 
             if (up_p())
             {{
