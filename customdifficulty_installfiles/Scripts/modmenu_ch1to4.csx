@@ -195,8 +195,10 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         surface_reset_target();
         draw_surface(surf_modtitles, xx + 110, yy + 110);
 
-        if (!isSubmenu)
-            draw_sprite(spr_heart, 0, xx + 85, yy + 120);
+        if (!isSubmenu) {{
+            menusiner += 1;
+            draw_sprite_part(spr_heart_harrows, menusiner / 20, 8 - 8 * (global.modmenuno > 0), 0, 16 + 8 * (global.modmenuno > 0) + 8 * (global.modmenuno < (array_length(global.modmenu_data) - 1)), 16, xx + 85 - 8 * (global.modmenuno > 0), yy + 120);
+        }}
 
         // form buttons
         var _xPos = (global.lang == ""en"") ? (xx + 170) : (xx + 150);
