@@ -102,6 +102,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @"
     global.modmenuno = 0;
     global.modsubmenuno = -1;
     global.modsubmenuselected = false;
+    global.modsubmenuscroll = 0;
     global.modmenu_data = array_create(0);
 ");
 
@@ -197,15 +198,22 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
             draw_set_color(c_gray);
 
         var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
-        for (var i = 0; i < array_length(form_data); i++)
+        for (var i = global.modsubmenuscroll; i < min(global.modsubmenuscroll + 7, array_length(form_data) + 1 /* (back button) */); i++)
         {{
+            if (i >= array_length(form_data))
+            {{
+                draw_set_color(c_white);
+                draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({back_text})); // Back
+                continue;
+            }}
+
             if (global.modsubmenuselected && global.modsubmenuno == i)
                 draw_set_color(c_yellow);
             else
                 draw_set_color(c_white);
 
             var row_data = form_data[i];
-            draw_text(_xPos, yy + 150 + i * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
+            draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
 
             var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
             var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
@@ -228,15 +236,11 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
                 }}
             }}
 
-            draw_text(_selectXPos, yy + 150 + i * 35, string_hash_to_newline(valueString));
+            draw_text(_selectXPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline(valueString));
         }}
 
-        draw_set_color(c_white);
-        if (array_length(form_data) < 7)
-            draw_text(_xPos, yy + 150 + array_length(form_data) * 35, string_hash_to_newline({back_text})); // Back
-
         if (isSubmenu)
-            draw_sprite(spr_heart, 0, _heartXPos, yy + 160 + (global.modsubmenuno * 35));
+            draw_sprite(spr_heart, 0, _heartXPos, yy + 160 + ((global.modsubmenuno - global.modsubmenuscroll) * 35));
     }}
 ");
 
@@ -249,6 +253,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
         var isSubmenu = (global.modsubmenuno >= 0);
 
         if (!isSubmenu) {{
+            // enter submenu right away if there is only one submenu
             if (array_length(global.modmenu_data) == 1)
                 global.modsubmenuno = 0;
 
@@ -285,11 +290,11 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var form_length = ds_map_exists(global.modmenu_data[global.modmenuno], ""form"") ? array_length(form_data) : 0;
             // back button
-            if (form_length > 0 && form_length < 7)
-                form_length++;
+            form_length++;
 
             if (form_length <= 0) {{
                 global.modsubmenuno = -1;
+                global.modsubmenuscroll = 0;
             }}
 
             if (up_p())
@@ -297,16 +302,30 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
                 movenoise = 1;
 
                 global.modsubmenuno--;
+
+                if (global.modsubmenuno < global.modsubmenuscroll)
+                    global.modsubmenuscroll = global.modsubmenuno;
+
                 if (global.modsubmenuno < 0)
+                {{
                     global.modsubmenuno = form_length - 1;
+                    global.modsubmenuscroll = max(0, form_length - 7);
+                }}
             }}
             if (down_p())
             {{
                 movenoise = 1;
 
                 global.modsubmenuno++;
+
+                if (global.modsubmenuno >= global.modsubmenuscroll + 7)
+                    global.modsubmenuscroll = global.modsubmenuno - 6;
+
                 if (global.modsubmenuno >= form_length)
+                {{
                     global.modsubmenuno = 0;
+                    global.modsubmenuscroll = 0;
+                }}
             }}
             if (button1_p() && onebuffer < 0 && twobuffer < 0)
             {{
@@ -315,6 +334,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
 
                 if (global.modsubmenuno >= array_length(form_data)) {{
                     global.modsubmenuno = -1;
+                    global.modsubmenuscroll = 0;
                     
                     if (array_length(global.modmenu_data) == 1)
                     {{
@@ -369,6 +389,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
                 cancelnoise = 1;
                 twobuffer = 2;
                 global.modsubmenuno = -1;
+                global.modsubmenuscroll = 0;
 
                 if (array_length(global.modmenu_data) == 1)
                 {{
