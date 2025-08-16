@@ -204,7 +204,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
             draw_text(_xPos, yy + 150 + i * 35, string_hash_to_newline(ds_map_find_value(row_data, ""title_en"")));
 
             var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-            var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
+            var ranges = string_split(ds_map_find_value(row_data, ""value_range_en""), "";"");
             var valueString = """";
 
             for (var j = 0; j < array_length(ranges); j++) {{
@@ -324,8 +324,8 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
 
                     // if range is only labels just cycle through them
                     var row_data = form_data[global.modsubmenuno];
-                    var value_range = ds_map_find_value(row_data, ""value_range"");
-                    var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
+                    var value_range = ds_map_find_value(row_data, ""value_range_en"");
+                    var ranges = string_split(ds_map_find_value(row_data, ""value_range_en""), "";"");
                     var isAllLabels = true;
 
                     for (var i = 0; i < array_length(ranges); i++) {
@@ -377,7 +377,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
         } else {
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var row_data = form_data[global.modsubmenuno];
-            var value_range = ds_map_find_value(row_data, ""value_range"");
+            var value_range = ds_map_find_value(row_data, ""value_range_en"");
             var value_name = ds_map_find_value(row_data, ""value_name"");
             var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
             
@@ -394,7 +394,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                 else
                     value += 0.1;
 
-                var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
+                var ranges = string_split(ds_map_find_value(row_data, ""value_range_en""), "";"");
 
                 for (var i = 0; i < array_length(ranges); i++) {
                     var range = ranges[i];
@@ -429,7 +429,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                 else
                     value -= 0.1;
 
-                var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
+                var ranges = string_split(ds_map_find_value(row_data, ""value_range_en""), "";"");
 
                 for (var i = array_length(ranges) - 1; i >= 0; i--) {
                     var range = ranges[i];
