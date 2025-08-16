@@ -63,6 +63,7 @@ UndertaleTexturePageItem pg_modsbt1 = AddNewTexturePageItem(0, 0, 33, 24);
 UndertaleTexturePageItem pg_modsbt2 = AddNewTexturePageItem(0, 24, 33, 24);
 UndertaleTexturePageItem pg_modsbt3 = AddNewTexturePageItem(0, 48, 33, 24);
 UndertaleTexturePageItem pg_modsdesc = AddNewTexturePageItem(33, 0, 35, 18);
+UndertaleTexturePageItem pg_modsfade = AddNewTexturePageItem(33, 18, 35, 35);
 
 // add 'mods' button
 {
@@ -78,7 +79,7 @@ UndertaleTexturePageItem pg_modsdesc = AddNewTexturePageItem(33, 0, 35, 18);
     var sItem = new UndertaleSprite { Name = name, Width = width, Height = height, MarginLeft = marginLeft, MarginRight = marginRight, MarginTop = marginTop, MarginBottom = marginBottom };
 
     UndertaleTexturePageItem[] spriteTextures = { pg_modsbt1, pg_modsbt2, pg_modsbt3 };
-    foreach (var spriteTexture in spriteTextures) 
+    foreach (var spriteTexture in spriteTextures)
     {
         sItem.Textures.Add(new UndertaleSprite.TextureEntry() { Texture = spriteTexture });
     }
@@ -89,6 +90,26 @@ UndertaleTexturePageItem pg_modsdesc = AddNewTexturePageItem(33, 0, 35, 18);
 {
     UndertaleSprite spr_darkmenudesc = Data.Sprites.ByName("spr_darkmenudesc");
     spr_darkmenudesc.Textures.Add(new UndertaleSprite.TextureEntry() { Texture = pg_modsdesc });
+}
+
+// add modtitles fade
+{
+    var name = Data.Strings.MakeString("spr_darkmodsfade");
+    uint width = 35;
+    uint height = 35;
+    ushort marginLeft = 0;
+    int marginRight = (int)width - 1;
+    ushort marginTop = 0;
+    int marginBottom = (int)height - 1;
+
+    var sItem = new UndertaleSprite { Name = name, Width = width, Height = height, MarginLeft = marginLeft, MarginRight = marginRight, MarginTop = marginTop, MarginBottom = marginBottom };
+
+    UndertaleTexturePageItem[] spriteTextures = { pg_modsfade };
+    foreach (var spriteTexture in spriteTextures)
+    {
+        sItem.Textures.Add(new UndertaleSprite.TextureEntry() { Texture = spriteTexture });
+    }
+    Data.Sprites.Add(sItem);
 }
 
 // Code edits
@@ -102,8 +123,13 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @"
     global.modmenuno = 0;
     global.modsubmenuno = -1;
     global.modsubmenuselected = false;
+    global.modsubmenuscroll = 0;
     global.modmenu_data = array_create(0);
+    surf_modtitles = -1;
 ");
+
+Func<string,string,string> ds_map_find_value_lang =
+    (id, key) => @$"(ds_map_exists({id}, {key} + ""_"" + global.lang) ? ds_map_find_value({id}, {key} + ""_"" + global.lang) :  ds_map_find_value({id}, {key} + ""_en""))";
 
 // Add menu draw code
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Draw_0", "msprite[4] = spr_darkconfigbt;", @"
@@ -135,52 +161,53 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         // top row buttons
         var isSubmenu = (global.modsubmenuno >= 0);
         var isMenuLonely = array_length(global.modmenu_data) == 1;
-
-        var startPadding = 0;
-        if (!isMenuLonely)
-        {{
-            var xAcc = 0;
-            for (var i = 0; i < array_length(global.modmenu_data); i++)
-            {{
-                var menu_data = global.modmenu_data[i];
-                xAcc += ds_map_find_value(menu_data, ""title_size_en"") + 25;
-            }}
-            if (xAcc <= 410)
-                startPadding = (410 - xAcc - 45) / 2;
-        }}
-        else
-            startPadding = (410 - ds_map_find_value(global.modmenu_data[0], ""title_size_en"")) / 2;
         
         draw_set_color(c_white);
-        var xAcc = 0;
-        var xSelAcc = 0;
-        var isHitMenuNo = false;
+        var allmodmenus = """";
         
-        for (var i = 0; i < array_length(global.modmenu_data); i++)
+        for (var i = global.modmenuno; i < array_length(global.modmenu_data); i++)
         {{
-            var menu_data = global.modmenu_data[i];
-            if (isSubmenu)
-            {{
-                if (isMenuLonely)
-                    draw_set_color(c_white);
-                else if (global.modmenuno == i)
-                    draw_set_color(c_orange);
-                else
-                    draw_set_color(c_gray);
-            }}
-        
-            draw_text(xx + 110 + startPadding + xAcc, yy + 100 + !isMenuLonely * 10, string_hash_to_newline(string_upper(ds_map_find_value(menu_data, ""title_en""))));
-            xAcc += ds_map_find_value(menu_data, ""title_size_en"") + 45;
-            if (!isHitMenuNo && !isSubmenu) {{
-                if (global.modmenuno == i)
-                    isHitMenuNo = true;
-                else
-                    xSelAcc += ds_map_find_value(menu_data, ""title_size_en"") + 45;
-            }}
+            allmodmenus += string_upper({ds_map_find_value_lang("global.modmenu_data[i]", @"""title""")}) + (i + 1 < array_length(global.modmenu_data) ? ""        "" : """");
         }}
 
-        if (!isSubmenu)
-            draw_sprite(spr_heart, 0, xx + 85 + startPadding + xSelAcc, yy + 120);
+        if (!surface_exists(surf_modtitles))
+        {{
+            surf_modtitles = surface_create(410, 35);
+        }}
+        surface_set_target(surf_modtitles);
+        draw_clear_alpha(c_black, 0);
+        
+        if (isMenuLonely || !isSubmenu)
+        {{
+            draw_set_color(c_white);
+            if (isMenuLonely)
+            {{
+                draw_set_halign(fa_center);
+                draw_text(205, 0, allmodmenus);
+                draw_set_halign(fa_left);
+            }}
+            else
+            {{
+                draw_text(0, 0, allmodmenus);
+            }}
+        }}
+        else
+        {{
+            draw_set_color(c_gray);
+            draw_text(0, 0, allmodmenus);
+            draw_set_color(c_orange);
+            draw_text(0, 0, string_upper({ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""title""")}));
+        }}
+
+        draw_sprite(spr_darkmodsfade, 0, 410 - 35, 0);
+
+        surface_reset_target();
+        draw_surface(surf_modtitles, xx + 110, yy + 110);
+
+        if (!isSubmenu) {{
+            menusiner += 1;
+            draw_sprite_part(spr_heart_harrows, menusiner / 20, 8 - 8 * (global.modmenuno > 0), 0, 16 + 8 * (global.modmenuno > 0) + 8 * (global.modmenuno < (array_length(global.modmenu_data) - 1)), 16, xx + 85 - 8 * (global.modmenuno > 0), yy + 120);
+        }}
 
         // form buttons
         var _xPos = (global.lang == ""en"") ? (xx + 170) : (xx + 150);
@@ -193,196 +220,236 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
             draw_set_color(c_gray);
 
         var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
-        for (var i = 0; i < array_length(form_data); i++)
+
+        if (array_length(form_data) >= 0)
         {{
-            if (global.modsubmenuselected && global.modsubmenuno == i)
-                draw_set_color(c_yellow);
-            else
-                draw_set_color(c_white);
+            for (var i = global.modsubmenuscroll; i < min(global.modsubmenuscroll + 7, array_length(form_data) + 1 /* (back button) */); i++)
+            {{
+                if (i >= array_length(form_data))
+                {{
+                    draw_set_color(c_white);
+                    draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({back_text})); // Back
+                    continue;
+                }}
 
-            var row_data = form_data[i];
-            draw_text(_xPos, yy + 150 + i * 35, string_hash_to_newline(ds_map_find_value(row_data, ""title_en"")));
+                if (global.modsubmenuselected && global.modsubmenuno == i)
+                    draw_set_color(c_yellow);
+                else
+                    draw_set_color(c_white);
 
-            var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-            var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
-            var valueString = """";
+                var row_data = form_data[i];
+                draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
 
-            for (var j = 0; j < array_length(ranges); j++) {{
-                var range = ranges[j];
-                if (string_ends_with(range, ""%"")) {{
-                    var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                    if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
-                        valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
-                        break;
-                    }}
-                }} else if (string_pos(""="", range)) {{
-                    var labelValue = string_split(range, ""="");
-                    if (value == real(labelValue[1]) || j+1 == array_length(ranges)) {{
-                        valueString = labelValue[0];
-                        break;
+                var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
+                var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
+                var valueString = """";
+
+                for (var j = 0; j < array_length(ranges); j++) {{
+                    var range = ranges[j];
+                    if (string_ends_with(range, ""%"")) {{
+                        var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                        if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
+                            valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
+                            break;
+                        }}
+                    }} else if (string_pos(""="", range)) {{
+                        var labelValue = string_split(range, ""="");
+                        if (value == real(labelValue[1]) || j+1 == array_length(ranges)) {{
+                            valueString = labelValue[0];
+                            break;
+                        }}
                     }}
                 }}
+
+                draw_text(_selectXPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline(valueString));
             }}
 
-            draw_text(_selectXPos, yy + 150 + i * 35, string_hash_to_newline(valueString));
+            if (array_length(form_data) + 1 > 7)
+            {{
+                var modscrollbary = 180;
+                var modscrollbarlength = 190;
+                var modscrollstep = modscrollbarlength / (array_length(form_data) + 1);
+                var modscrollerlength = modscrollstep * 7;
+                draw_set_color(c_dkgray);
+                draw_rectangle(xx + 85, yy + modscrollbary, xx + 90, yy + modscrollbary + modscrollbarlength, false);
+                draw_set_color(c_white);
+                draw_rectangle(xx + 85, yy + modscrollbary + (global.modsubmenuscroll * modscrollstep), xx + 90, yy + modscrollbary + modscrollerlength + (global.modsubmenuscroll * modscrollstep), false);
+
+                if (global.modsubmenuscroll > 0)
+                    draw_sprite_ext(spr_morearrow, 0, xx + 81, (yy + modscrollbary) - 10 - (sin(cur_jewel / 12) * 3), 1, -1, 0, c_white, 1);
+
+                if ((global.modsubmenuscroll + 7) < (array_length(form_data) + 1))
+                    draw_sprite_ext(spr_morearrow, 0, xx + 81, yy + 10 + modscrollbary + modscrollbarlength + (sin(cur_jewel / 12) * 3), 1, 1, 0, c_white, 1);
+            }}
         }}
 
-        draw_set_color(c_white);
-        if (array_length(form_data) < 7)
-            draw_text(_xPos, yy + 150 + array_length(form_data) * 35, string_hash_to_newline({back_text})); // Back
-
         if (isSubmenu)
-            draw_sprite(spr_heart, 0, _heartXPos, yy + 160 + (global.modsubmenuno * 35));
+            draw_sprite(spr_heart, 0, _heartXPos, yy + 160 + ((global.modsubmenuno - global.modsubmenuscroll) * 35));
     }}
 ");
 
 // Add menu step code
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Step_0", "global.menucoord[0] = 4;", "global.menucoord[0] = array_length(global.modmenu_data) <= 0 ? 4 : 5;");
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Step_0", "if (global.menucoord[0] == 4)", "if (global.menucoord[0] == (array_length(global.modmenu_data) <= 0 ? 4 : 5))");
-importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
+importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
     if (global.menuno == 6)
-    {
+    {{
         var isSubmenu = (global.modsubmenuno >= 0);
 
-        if (!isSubmenu) {
+        if (!isSubmenu) {{
+            // enter submenu right away if there is only one submenu
             if (array_length(global.modmenu_data) == 1)
                 global.modsubmenuno = 0;
 
             if (left_p())
-            {
+            {{
                 movenoise = 1;
 
                 global.modmenuno--;
                 if (global.modmenuno < 0)
                     global.modmenuno = array_length(global.modmenu_data) - 1;
-            }
+            }}
             if (right_p())
-            {
+            {{
                 movenoise = 1;
 
                 global.modmenuno++;
                 if (global.modmenuno >= array_length(global.modmenu_data))
                     global.modmenuno = 0;
-            }
+            }}
             if (button1_p() && onebuffer < 0 && twobuffer < 0)
-            {
+            {{
                 onebuffer = 2;
                 selectnoise = 1;
                 global.modsubmenuno = 0;
-            }
+            }}
             if (button2_p() && onebuffer < 0 && twobuffer < 0)
-            {
+            {{
                 cancelnoise = 1;
                 twobuffer = 2;
                 global.menuno = 0;
                 global.submenu = 0;
-            }
-        } else if (!global.modsubmenuselected) {
+            }}
+        }} else if (!global.modsubmenuselected) {{
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var form_length = ds_map_exists(global.modmenu_data[global.modmenuno], ""form"") ? array_length(form_data) : 0;
-            // back button
-            if (form_length > 0 && form_length < 7)
-                form_length++;
 
-            if (form_length <= 0) {
+            if (form_length <= 0) {{
                 global.modsubmenuno = -1;
-            }
+                global.modsubmenuscroll = 0;
+            }}
+
+            // back button
+            form_length++;
 
             if (up_p())
-            {
+            {{
                 movenoise = 1;
 
                 global.modsubmenuno--;
+
+                if (global.modsubmenuno < global.modsubmenuscroll)
+                    global.modsubmenuscroll = global.modsubmenuno;
+
                 if (global.modsubmenuno < 0)
+                {{
                     global.modsubmenuno = form_length - 1;
-            }
+                    global.modsubmenuscroll = max(0, form_length - 7);
+                }}
+            }}
             if (down_p())
-            {
+            {{
                 movenoise = 1;
 
                 global.modsubmenuno++;
+
+                if (global.modsubmenuno >= global.modsubmenuscroll + 7)
+                    global.modsubmenuscroll = global.modsubmenuno - 6;
+
                 if (global.modsubmenuno >= form_length)
+                {{
                     global.modsubmenuno = 0;
-            }
+                    global.modsubmenuscroll = 0;
+                }}
+            }}
             if (button1_p() && onebuffer < 0 && twobuffer < 0)
-            {
+            {{
                 onebuffer = 2;
                 selectnoise = 1;
 
-                if (global.modsubmenuno >= array_length(form_data)) {
+                if (global.modsubmenuno >= array_length(form_data)) {{
                     global.modsubmenuno = -1;
+                    global.modsubmenuscroll = 0;
                     
                     if (array_length(global.modmenu_data) == 1)
-                    {
+                    {{
                         global.menuno = 0;
                         global.submenu = 0;
-                    }
-                }
+                    }}
+                }}
                 else
-                {
+                {{
                     global.modsubmenuselected = true;
 
                     // if range is only labels just cycle through them
                     var row_data = form_data[global.modsubmenuno];
-                    var value_range = ds_map_find_value(row_data, ""value_range"");
-                    var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
+                    var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
                     var isAllLabels = true;
 
-                    for (var i = 0; i < array_length(ranges); i++) {
+                    for (var i = 0; i < array_length(ranges); i++) {{
                         var range = ranges[i];
-                        if (string_ends_with(range, ""%"")) {
+                        if (string_ends_with(range, ""%"")) {{
                             isAllLabels = false;
                             break;
-                        }
-                    }
+                        }}
+                    }}
 
-                    var value_name = ds_map_find_value(row_data, ""value_name"");
                     var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
 
-                    if (isAllLabels) {
+                    if (isAllLabels) {{
                         global.modsubmenuselected = false;
 
-                        for (var i = 0; i < array_length(ranges); i++) {
+                        for (var i = 0; i < array_length(ranges); i++) {{
                             var range = ranges[i];
-                            if (string_pos(""="", range)) {
+                            if (string_pos(""="", range)) {{
                                 var labelValue = string_split(range, ""="");
-                                if (value < real(labelValue[1])) {
+                                if (value < real(labelValue[1])) {{
                                     value = real(labelValue[1]);
                                     break;
-                                } else if (i+1 == array_length(ranges)) {
+                                }} else if (i+1 == array_length(ranges)) {{
                                     range = ranges[0];
                                     labelValue = string_split(range, ""="");
                                     value = real(labelValue[1]);
                                     break;
-                                }
-                            }
-                        }
+                                }}
+                            }}
+                        }}
 
                         variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
-                    }
-                }
-            }
+                    }}
+                }}
+            }}
             if (button2_p() && onebuffer < 0 && twobuffer < 0)
-            {
+            {{
                 cancelnoise = 1;
                 twobuffer = 2;
                 global.modsubmenuno = -1;
+                global.modsubmenuscroll = 0;
 
                 if (array_length(global.modmenu_data) == 1)
-                {
+                {{
                     global.menuno = 0;
                     global.submenu = 0;
-                }
-            }
-        } else {
+                }}
+            }}
+        }} else {{
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var row_data = form_data[global.modsubmenuno];
-            var value_range = ds_map_find_value(row_data, ""value_range"");
-            var value_name = ds_map_find_value(row_data, ""value_name"");
+            var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
             var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
             
             if (right_h())
-            {
+            {{
                 if (value < 0.2)
                     value += 0.005;
                 else if (value < 0.5)
@@ -394,30 +461,28 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                 else
                     value += 0.1;
 
-                var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
-
-                for (var i = 0; i < array_length(ranges); i++) {
+                for (var i = 0; i < array_length(ranges); i++) {{
                     var range = ranges[i];
-                    if (string_ends_with(range, ""%"")) {
+                    if (string_ends_with(range, ""%"")) {{
                         var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                        if (value * 100 <= minMax[1] || i+1 == array_length(ranges)) {
+                        if (value * 100 <= minMax[1] || i+1 == array_length(ranges)) {{
                             value = clamp(value, minMax[0] / 100, minMax[1] / 100);
                             break;
-                        }
-                    } else if (string_pos(""="", range)) {
+                        }}
+                    }} else if (string_pos(""="", range)) {{
                         var labelValue = string_split(range, ""="");
-                        if (value <= real(labelValue[1]) || i+1 == array_length(ranges)) {
+                        if (value <= real(labelValue[1]) || i+1 == array_length(ranges)) {{
                             value = real(labelValue[1]);
                             break;
-                        }
-                    }
-                }
+                        }}
+                    }}
+                }}
 
                 variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
-            }
+            }}
             
             if (left_h())
-            {
+            {{
                 if (value <= 0.2)
                     value -= 0.005;
                 else if (value <= 0.5)
@@ -429,27 +494,25 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                 else
                     value -= 0.1;
 
-                var ranges = string_split(ds_map_find_value(row_data, ""value_range""), "";"");
-
-                for (var i = array_length(ranges) - 1; i >= 0; i--) {
+                for (var i = array_length(ranges) - 1; i >= 0; i--) {{
                     var range = ranges[i];
-                    if (string_ends_with(range, ""%"")) {
+                    if (string_ends_with(range, ""%"")) {{
                         var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                        if (value * 100 >= minMax[0] || i == 0) {
+                        if (value * 100 >= minMax[0] || i == 0) {{
                             value = clamp(value, minMax[0] / 100, minMax[1] / 100);
                             break;
-                        }
-                    } else if (string_pos(""="", range)) {
+                        }}
+                    }} else if (string_pos(""="", range)) {{
                         var labelValue = string_split(range, ""="");
-                        if (value >= real(labelValue[1]) || i == 0) {
+                        if (value >= real(labelValue[1]) || i == 0) {{
                             value = real(labelValue[1]);
                             break;
-                        }
-                    }
-                }
+                        }}
+                    }}
+                }}
 
                 variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
-            }
+            }}
             
             se_select = 0;
 
@@ -460,15 +523,15 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @"
                 se_select = 1;
             
             if (se_select == 1)
-            {
+            {{
                 selectnoise = 1;
                 onebuffer = 2;
                 twobuffer = 2;
                 global.modsubmenuselected = false;
-            }
-        }
+            }}
+        }}
         
-    }
+    }}
 ");
 
 // Finish edit

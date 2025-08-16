@@ -101,50 +101,49 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     var menudata = ds_map_create();
     ds_map_add(menudata, ""title_en"", ""Difficulty"");
-    ds_map_add(menudata, ""title_size_en"", 138);
 
     var formdata = array_create(0);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
-    ds_map_add(rowdata, ""value_range"", ""0-1000%;INF=2147483647"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INF=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
-    ds_map_add(rowdata, ""value_range"", ""0-1000%;[-999]=2147483647"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Victory Res"");
-    ds_map_add(rowdata, ""value_range"", ""OFF=-1;0-100%"");
+    ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
     ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
-    ds_map_add(rowdata, ""value_range"", ""0-1000%;INSTANT=2147483647"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Hit.All"");
-    ds_map_add(rowdata, ""value_range"", ""OFF=0;ON=1"");
+    ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
     ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""I-Frames"");
-    ds_map_add(rowdata, ""value_range"", ""0-1000%;"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;"");
     ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
     array_push(formdata, rowdata);
 
     {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
-    ds_map_add(rowdata, ""value_range"", ""INHERIT=-1;0-1000%;INF=2147483647"");
+    ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
     array_push(formdata, rowdata);
     ")}
