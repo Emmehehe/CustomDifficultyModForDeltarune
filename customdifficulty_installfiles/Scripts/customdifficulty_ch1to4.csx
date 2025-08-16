@@ -101,7 +101,6 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     var menudata = ds_map_create();
     ds_map_add(menudata, ""title_en"", ""Difficulty"");
-    ds_map_add(menudata, ""title_size_en"", 138);
 
     var formdata = array_create(0);
 

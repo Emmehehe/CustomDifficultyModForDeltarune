@@ -139,53 +139,30 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         // top row buttons
         var isSubmenu = (global.modsubmenuno >= 0);
         var isMenuLonely = array_length(global.modmenu_data) == 1;
-
-        var startPadding = 0;
-        if (!isMenuLonely)
-        {{
-            var xAcc = 0;
-            for (var i = 0; i < array_length(global.modmenu_data); i++)
-            {{
-                var menu_data = global.modmenu_data[i];
-                xAcc += {ds_map_find_value_lang("menu_data", @"""title_size""")} + 25;
-            }}
-            if (xAcc <= 410)
-                startPadding = (410 - xAcc - 45) / 2;
-        }}
-        else
-            startPadding = (410 - {ds_map_find_value_lang("global.modmenu_data[0]", @"""title_size""")}) / 2;
         
         draw_set_color(c_white);
-        var xAcc = 0;
-        var xSelAcc = 0;
-        var isHitMenuNo = false;
+        var allmodmenus = """";
         
-        for (var i = 0; i < array_length(global.modmenu_data); i++)
+        for (var i = global.modmenuno; i < array_length(global.modmenu_data); i++)
         {{
-            var menu_data = global.modmenu_data[i];
-            var title_size = {ds_map_find_value_lang("menu_data", @"""title_size""")};
-            if (isSubmenu)
-            {{
-                if (isMenuLonely)
-                    draw_set_color(c_white);
-                else if (global.modmenuno == i)
-                    draw_set_color(c_orange);
-                else
-                    draw_set_color(c_gray);
-            }}
+            allmodmenus += string_upper({ds_map_find_value_lang("global.modmenu_data[i]", @"""title""")}) + ""        "";
+        }}
         
-            draw_text(xx + 110 + startPadding + xAcc, yy + 100 + !isMenuLonely * 10, string_hash_to_newline(string_upper({ds_map_find_value_lang("menu_data", @"""title""")})));
-            xAcc += title_size + 45;
-            if (!isHitMenuNo && !isSubmenu) {{
-                if (global.modmenuno == i)
-                    isHitMenuNo = true;
-                else
-                    xSelAcc += title_size + 45;
-            }}
+        if (isMenuLonely || !isSubmenu)
+        {{
+            draw_set_color(c_white);
+            draw_text(xx + 110, yy + 110, allmodmenus);
+        }}
+        else
+        {{
+            draw_set_color(c_gray);
+            draw_text(xx + 110, yy + 110, allmodmenus);
+            draw_set_color(c_orange);
+            draw_text(xx + 110, yy + 110, string_upper({ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""title""")}));
         }}
 
         if (!isSubmenu)
-            draw_sprite(spr_heart, 0, xx + 85 + startPadding + xSelAcc, yy + 120);
+            draw_sprite(spr_heart, 0, xx + 85, yy + 120);
 
         // form buttons
         var _xPos = (global.lang == ""en"") ? (xx + 170) : (xx + 150);
