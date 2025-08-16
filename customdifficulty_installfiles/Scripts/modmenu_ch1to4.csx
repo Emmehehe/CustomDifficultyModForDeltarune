@@ -258,6 +258,24 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
 
         if (isSubmenu)
             draw_sprite(spr_heart, 0, _heartXPos, yy + 160 + ((global.modsubmenuno - global.modsubmenuscroll) * 35));
+
+        if (array_length(form_data) + 1 > 7)
+        {{
+            var modscrollbary = 180;
+            var modscrollbarlength = 190;
+            var modscrollstep = modscrollbarlength / (array_length(form_data) + 1);
+            var modscrollerlength = modscrollstep * 7;
+            draw_set_color(c_dkgray);
+            draw_rectangle(xx + 85, yy + modscrollbary, xx + 90, yy + modscrollbary + modscrollbarlength, false);
+            draw_set_color(c_white);
+            draw_rectangle(xx + 85, yy + modscrollbary + (global.modsubmenuscroll * modscrollstep), xx + 90, yy + modscrollbary + modscrollerlength + (global.modsubmenuscroll * modscrollstep), false);
+
+            if (global.modsubmenuscroll > 0)
+                draw_sprite_ext(spr_morearrow, 0, xx + 81, (yy + modscrollbary) - 10 - (sin(cur_jewel / 12) * 3), 1, -1, 0, c_white, 1);
+
+            if ((global.modsubmenuscroll + 7) < (array_length(form_data) + 1))
+                draw_sprite_ext(spr_morearrow, 0, xx + 81, yy + 10 + modscrollbary + modscrollbarlength + (sin(cur_jewel / 12) * 3), 1, 1, 0, c_white, 1);
+        }}
     }}
 ");
 
