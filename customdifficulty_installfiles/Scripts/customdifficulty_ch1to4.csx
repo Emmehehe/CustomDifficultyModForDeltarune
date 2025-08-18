@@ -30,18 +30,18 @@ importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function sc
     function scr_gamestart()
     {{
         global.diff_damagemulti = 1;
-        global.diff_downdeficit = 1 / 2;
-        global.diff_victoryres = 1 / 8;
-        global.diff_downedregen = 1 / 8;
-        global.diff_hitall = 0;
-        global.diff_iframes = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = -1;
         ")}
+        global.diff_hitall = 0;
+        global.diff_iframes = 1;
         global.diff_battlerewards = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_rewardranking = 0;
         ")}
+        global.diff_downdeficit = 1 / 2;
+        global.diff_downedregen = 1 / 8;
+        global.diff_victoryres = 1 / 8;
         global.diff_resettodefaults = 0;
 
     ");
@@ -69,18 +69,18 @@ foreach (string scrName in loadLikes)
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
         global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", 1);
-        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", 1 / 2);
-        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
-        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
-        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
-        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", 1);
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", -1);
         ")}
+        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
+        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", 1);
         global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", 1);
         {(ch_no != 3 ? "" : @"
         global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", 0);
         ")}
+        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", 1 / 2);
+        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
+        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
         ossafe_ini_close();
 
         ");
@@ -91,18 +91,18 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
 
     ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
     ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
-    ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
-    ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
-    ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
-    ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
-    ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
     {(ch_no != 3 ? "" : @"
     ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
     ")}
+    ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
+    ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
     ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
     {(ch_no != 3 ? "" : @"
     ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
     ")}
+    ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
+    ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
+    ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
     ossafe_ini_close();
     ");
 
@@ -123,23 +123,13 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
     array_push(formdata, rowdata);
 
+    {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
+    ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
+    ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
+    ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
     array_push(formdata, rowdata);
-
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Victory Res"");
-    ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
-    ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
-    array_push(formdata, rowdata);
-
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
-    array_push(formdata, rowdata);
+    ")}
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Hit.All"");
@@ -152,14 +142,6 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%;"");
     ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
     array_push(formdata, rowdata);
-
-    {(ch_no != 3 ? "" : @"
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
-    ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
-    array_push(formdata, rowdata);
-    ")}
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
@@ -174,6 +156,24 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     ds_map_add(rowdata, ""value_name"", ""diff_rewardranking"");
     array_push(formdata, rowdata);
     ")}
+
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
+    ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
+    array_push(formdata, rowdata);
+
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
+    ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
+    array_push(formdata, rowdata);
+
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Victory Res"");
+    ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
+    ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
+    array_push(formdata, rowdata);
 
     // TODO requires a refactor to modmenu but would be much better to be able to have menu buttons trigger a function, this is a hacky work-a-round
     var rowdata = ds_map_create();
@@ -191,18 +191,18 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
     if (global.diff_resettodefaults > 0)
     {{
         global.diff_damagemulti = 1;
-        global.diff_downdeficit = 1 / 2;
-        global.diff_victoryres = 1 / 8;
-        global.diff_downedregen = 1 / 8;
-        global.diff_hitall = 0;
-        global.diff_iframes = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = -1;
         ")}
+        global.diff_hitall = 0;
+        global.diff_iframes = 1;
         global.diff_battlerewards = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_rewardranking = 0;
         ")}
+        global.diff_downdeficit = 1 / 2;
+        global.diff_downedregen = 1 / 8;
+        global.diff_victoryres = 1 / 8;
         global.diff_resettodefaults = 0;
     }}
 ");
