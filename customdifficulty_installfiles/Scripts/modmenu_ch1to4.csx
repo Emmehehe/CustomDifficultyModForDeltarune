@@ -8,10 +8,18 @@ using UndertaleModLib.Util;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-// Prefire checks
 EnsureDataLoaded();
-const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
 var displayName = Data?.GeneralInfo?.DisplayName?.Content;
+
+// check version
+UndertaleVariable alreadyInstalled = Data.Variables.ByName("installed_modmenu");
+if (alreadyInstalled != null) {
+    ScriptMessage($"Skiping mod menu install for '{displayName}' as it is already installed.");
+    return;
+}
+
+// Prefire checks
+const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
 if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
 {
     ScriptError($"Error 0: data file display name does not match expected: '{expectedDisplayName}', actual display name: '{displayName}'.");
@@ -120,6 +128,8 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
 // Add menu create code
 importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @"
     
+    var installed_modmenu = true;
+
     global.modmenuno = 0;
     global.modsubmenuno = -1;
     global.modsubmenuselected = false;

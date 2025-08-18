@@ -6,10 +6,18 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-// Prefire checks
 EnsureDataLoaded();
-const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
 var displayName = Data?.GeneralInfo?.DisplayName?.Content;
+
+// check version
+UndertaleVariable alreadyInstalled = Data.Variables.ByName("installed_customdifficulty");
+if (alreadyInstalled != null) {
+    ScriptMessage($"Skiping custom difficulty install for '{displayName}' as it is already installed.");
+    return;
+}
+
+// Prefire checks
+const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
 if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
 {
     ScriptError($"Error 0: data file display name does not match expected: '{expectedDisplayName}', actual display name: '{displayName}'.");
@@ -29,6 +37,8 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
 importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function scr_gamestart\\(\\)\\s*{", @$"
     function scr_gamestart()
     {{
+        var installed_customdifficulty = true;
+
         global.diff_damagemulti = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = -1;
