@@ -35,6 +35,7 @@ importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function sc
         ")}
         global.diff_hitall = 0;
         global.diff_iframes = 1;
+        global.diff_tpgain = 1;
         global.diff_battlerewards = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_rewardranking = 0;
@@ -74,6 +75,7 @@ foreach (string scrName in loadLikes)
         ")}
         global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
         global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", 1);
+        global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", 1);
         global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", 1);
         {(ch_no != 3 ? "" : @"
         global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", 0);
@@ -96,6 +98,7 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
     ")}
     ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
     ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
+    ini_write_real(""DIFFICULTY"", ""TP_GAIN"", global.diff_tpgain);
     ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
     {(ch_no != 3 ? "" : @"
     ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
@@ -139,13 +142,19 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""I-Frames"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
     ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""TP Gain"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+    ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
+    array_push(formdata, rowdata);
+
+    var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
     ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
     array_push(formdata, rowdata);
 
@@ -196,6 +205,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
         ")}
         global.diff_hitall = 0;
         global.diff_iframes = 1;
+        global.diff_tpgain = 1;
         global.diff_battlerewards = 1;
         {(ch_no != 3 ? "" : @"
         global.diff_rewardranking = 0;
@@ -558,6 +568,41 @@ if (ch_no == 3) {
         global.flag[1116] += global.diff_rewardranking > 0 ? (global.diff_battlerewards * real(totalstring)) : real(totalstring);
     ");
 }
+
+// Apply TP Gain
+string[] tensionHeals = {"gml_Object_obj_grazebox_Collision_obj_collidebullet"};
+if (ch_no >= 1 && ch_no <= 2) {
+    string[] ch1to2TensionHeals = {"gml_Object_obj_heroparent_Alarm_1"};
+    tensionHeals = tensionHeals.Concat(ch1to2TensionHeals).ToArray();
+}
+if (ch_no == 2) {
+    string[] ch2TensionHeals = {"gml_Object_obj_sneo_lilguy_Collision_obj_yheart_shot", "gml_Object_obj_sneo_crusher_Collision_obj_yheart_shot",
+        "gml_Object_obj_pipis_egg_bullet_Collision_obj_yheart_shot", "gml_Object_obj_pipis_egg_bullet_Collision_obj_mettaton_bomb_hitbox", "gml_Object_obj_rouxls_enemy_Create_0",
+        "gml_Object_o_boxingcontroller_Step_0", "gml_Object_o_boxinggraze_Alarm_0"};
+    tensionHeals = tensionHeals.Concat(ch2TensionHeals).ToArray();
+}
+if (ch_no >= 3 && ch_no <= 4) {
+    string[] ch3to4TensionHeals = {"gml_Object_obj_heroparent_Step_0"};
+    tensionHeals = tensionHeals.Concat(ch3to4TensionHeals).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3TensionHeals = {"gml_Object_obj_tracking_sword_slash_extra_graze_Step_0", "gml_Object_obj_heroparent_Other_10"};
+    tensionHeals = tensionHeals.Concat(ch3TensionHeals).ToArray();
+}
+if (ch_no == 4) {
+    string[] ch4TensionHeals = {"gml_GlobalScript_scr_boltcheck", "gml_Object_obj_ghosthouse_key_Other_15", "gml_Object_obj_spearshot_Other_10", "gml_Object_obj_ghosthouse_dot_Other_15",
+        "gml_Object_obj_darkshape_greenblob_Step_0", "gml_Object_obj_attackpress_Other_11", "gml_Object_obj_hammer_of_justice_enemy_Draw_0"};
+    tensionHeals = tensionHeals.Concat(ch4TensionHeals).ToArray();
+}
+foreach (string scrName in tensionHeals)
+{
+    importGroup.QueueFindReplace(scrName, "scr_tensionheal(", "scr_tensionheal(global.diff_tpgain * ");
+}
+// avoid tp heal items
+if (ch_no == 4) {
+    importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "scr_tensionheal(5", "scr_tensionheal(global.diff_tpgain * 5");
+}
+importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "scr_tensionheal(40", "scr_tensionheal(global.diff_tpgain * 40");
 
 // Finish edit
 importGroup.Import();
