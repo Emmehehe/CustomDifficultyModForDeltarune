@@ -1,10 +1,10 @@
 # Custom Difficulty Mod For Deltarune
 Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brutal.
 
-<img src="https://github.com/user-attachments/assets/9a01549b-1ce8-4e94-ad12-e4dc05a860d4" width="480" />
+<img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.0.0)
+[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.1.0)
 
 ## Installation
 1. (optional) Backup your `DELTARUNE\` folder.
@@ -21,29 +21,32 @@ Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brut
 ## What options do?
 #### Damage Multi
 Multiply all incoming damage by this value.
-- Default: 100%
 - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
 - For weird attacks that deal damage as a percentage of the current HP, instead uses exponential logic to determine damage scaling. e.g. An attack that normally does 50% of your HP in vanilla, instead does 70.7% with double damage, and 25% with half damage. The calculation is thus: `dmgratio = vanilladmgratio^(1/dmgmulti)`.
 - For any damage over time effects, either tick faster, or apply more damage, or combination of both - where appropriate - proportionate with the multiplier that has been set.
 
+#### Hit.All
+When switched on, hits that target a single character instead hits the entire party. 
+- For no-hit runs, combine this setting with `Damage Multi=INF`.
+
+#### I-Frames
+Multiply the number of i-frames received after damage by this value.
+
+#### TP Gain
+Multiply TP gain from all sources (except item use) by this value.
+
+#### Battle Rewards
+Multiply post-battle rewards by this value.
+
 #### Down Deficit
 When a party member is downed, their HP is set to -50% max HP. This option lets you override that. 
-- Default: 50%
-
-#### Victory Res
-When a battle is won, all downed party members are healed up to 12.5% max HP. This option lets you override that.
-- Default: 12.5%
-- OFF: Can also be switched off entirely by reducing past 0%.
 
 #### Downed Regen
 When downed, party members regen 12.5% max HP every turn. This option lets you override that.
-- Default: 12.5%
 
-#### Hit.All
-When switched on, hits that target a single character instead hits the entire party. 
-- Default: OFF
-- For no-hit runs, combine this setting with `Damage Multi=INF`.
-- Warning: This option has not had a thorough test. I've only tested one or two encounters per chapter.
+#### Victory Res
+When a battle is won, all downed party members are healed up to 12.5% max HP. This option lets you override that.
+- OFF: Can also be switched off entirely by reducing past 0%.
 
 <details> 
   <summary><strong>CHAPTER 3 SPOILERS...</strong></summary>
@@ -51,9 +54,12 @@ When switched on, hits that target a single character instead hits the entire pa
   > #### Gameboard Dmg X
   > Multiplier for the damage in the chapter 3 game boards.
   > - Only shows up in the menu in chapter 3.
-  > - Default: INHERIT
   > - INHERIT - Can be set to inherit from the 'Damage Multi' setting by reducing past 0%.
   > - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
+  >
+  > #### Reward Ranking
+  > When this option is turned on, the 'Battle Rewards' option also affects the ranking that you get from battles in the chapter 3 game boards.
+  > - Only shows up in the menu in chapter 3.
 </details>
 
 ## Compatibility
