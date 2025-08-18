@@ -38,6 +38,11 @@ importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function sc
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = -1;
         ")}
+        global.diff_battlerewards = 1;
+        {(ch_no != 3 ? "" : @"
+        global.diff_rewardranking = 0;
+        ")}
+        global.diff_resettodefaults = 0;
 
     ");
 // Load globals from config
@@ -72,6 +77,10 @@ foreach (string scrName in loadLikes)
         {(ch_no != 3 ? "" : @"
         global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", -1);
         ")}
+        global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", 1);
+        {(ch_no != 3 ? "" : @"
+        global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", 0);
+        ")}
         ossafe_ini_close();
 
         ");
@@ -89,6 +98,10 @@ importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "os
     ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
     {(ch_no != 3 ? "" : @"
     ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
+    ")}
+    ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
+    {(ch_no != 3 ? "" : @"
+    ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
     ")}
     ossafe_ini_close();
     ");
@@ -148,9 +161,50 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     array_push(formdata, rowdata);
     ")}
 
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
+    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;"");
+    ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
+    array_push(formdata, rowdata);
+
+    {(ch_no != 3 ? "" : @"
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Reward Ranking"");
+    ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+    ds_map_add(rowdata, ""value_name"", ""diff_rewardranking"");
+    array_push(formdata, rowdata);
+    ")}
+
+    // TODO requires a refactor to modmenu but would be much better to be able to have menu buttons trigger a function, this is a hacky work-a-round
+    var rowdata = ds_map_create();
+    ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
+    ds_map_add(rowdata, ""value_range_en"", ""=0;=1"");
+    ds_map_add(rowdata, ""value_name"", ""diff_resettodefaults"");
+    array_push(formdata, rowdata);
+
     ds_map_add(menudata, ""form"", formdata);
 
     array_push(global.modmenu_data, menudata);
+");
+
+importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
+    if (global.diff_resettodefaults > 0)
+    {{
+        global.diff_damagemulti = 1;
+        global.diff_downdeficit = 1 / 2;
+        global.diff_victoryres = 1 / 8;
+        global.diff_downedregen = 1 / 8;
+        global.diff_hitall = 0;
+        global.diff_iframes = 1;
+        {(ch_no != 3 ? "" : @"
+        global.diff_gameboarddmgx = -1;
+        ")}
+        global.diff_battlerewards = 1;
+        {(ch_no != 3 ? "" : @"
+        global.diff_rewardranking = 0;
+        ")}
+        global.diff_resettodefaults = 0;
+    }}
 ");
 
 string[] damageLikes = {"gml_GlobalScript_scr_damage"};
@@ -480,6 +534,29 @@ if (ch_no == 4) {
 foreach (string scrName in iFramers)
 {
     importGroup.QueueFindReplace(scrName, "global.inv = global.invc", "global.inv = global.diff_iframes * global.invc");
+}
+
+// Apply Battle Rewards
+importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.xp += global.monsterexp[3];", @"
+    global.monsterexp[3] *= global.diff_battlerewards;
+    global.xp += global.monsterexp[3];
+");
+importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.gold += global.monstergold[3];", @"
+    global.monstergold[3] *= global.diff_battlerewards;
+    global.gold += global.monstergold[3];
+");
+if (ch_no == 3) {
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_gameshow_battlemanager_Step_0", " var scoretoAdd = totalstring;", @"
+        var scoretoAdd = totalstring;
+        scoretoAdd = string(global.diff_battlerewards * real(scoretoAdd));
+    ");
+}
+
+// Apply Reward Ranking
+if (ch_no == 3) {
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_gameshow_battlemanager_Draw_0", "global.flag[1116] += real(totalstring);", @"
+        global.flag[1116] += global.diff_rewardranking > 0 ? (global.diff_battlerewards * real(totalstring)) : real(totalstring);
+    ");
 }
 
 // Finish edit
