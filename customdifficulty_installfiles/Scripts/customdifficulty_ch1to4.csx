@@ -518,6 +518,27 @@ if (ch_no == 3) {
         if (target != 3 && global.diff_hitall <= 0)
     ");
 }
+// Disable these weird targeting exceptions in the damage scripts if hit.all=on, otherwise could hit the same target multiple times, instead of each target once.
+if (ch_no == 3) {
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (obj_knight_enemy.aoedamage == false)",
+        "if (global.diff_hitall <= 0 && obj_knight_enemy.aoedamage == false)");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.chapter == 3 && i_ex(obj_rouxls_ch3_enemy))",
+        "if (global.diff_hitall <= 0 && global.chapter == 3 && i_ex(obj_rouxls_ch3_enemy))");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.chapter == 3 && i_ex(obj_tenna_enemy) && obj_tenna_enemy.popularboy && global.hp[3] > 0)",
+        "if (global.diff_hitall <= 0 && global.chapter == 3 && i_ex(obj_tenna_enemy) && obj_tenna_enemy.popularboy && global.hp[3] > 0)");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_fixed", "if (global.chapter == 3 && i_ex(obj_knight_enemy))",
+        "if (global.diff_hitall <= 0 && global.chapter == 3 && i_ex(obj_knight_enemy))");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_maxhp", "if (target == 0)",
+        "if (global.diff_hitall <= 0 && target == 0)");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_maxhp", "if (obj_knight_enemy.myattackchoice != 13)",
+        "if (global.diff_hitall <= 0 && obj_knight_enemy.myattackchoice != 13)");
+}
+if (ch_no == 4) {
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.chapter == 4 && i_ex(obj_titan_enemy) && obj_titan_enemy.forcehitralsei)",
+        "if (global.diff_hitall <= 0 && global.chapter == 4 && i_ex(obj_titan_enemy) && obj_titan_enemy.forcehitralsei)");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.chapter == 4 && i_ex(obj_sound_of_justice_enemy) && obj_sound_of_justice_enemy.phase == 2)",
+        "if (global.diff_hitall <= 0 && global.chapter == 4 && i_ex(obj_sound_of_justice_enemy) && obj_sound_of_justice_enemy.phase == 2)");
+}
 
 // I-Frames
 string[] iFramers = {"gml_GlobalScript_scr_damage", "gml_GlobalScript_scr_damage_all", "gml_GlobalScript_scr_damage_all_overworld"};
