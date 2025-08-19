@@ -250,8 +250,10 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
                 var row_data = form_data[i];
                 draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
 
-                var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-                var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
+                var value_name = ds_map_find_value(row_data, ""value_name"");
+                var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
+                var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
+                var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
                 var valueString = """";
 
                 for (var j = 0; j < array_length(ranges); j++) {{
@@ -403,7 +405,8 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
 
                     // if range is only labels just cycle through them
                     var row_data = form_data[global.modsubmenuno];
-                    var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
+                    var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
+                    var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
                     var isAllLabels = true;
 
                     for (var i = 0; i < array_length(ranges); i++) {{
@@ -414,10 +417,12 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
                         }}
                     }}
 
-                    var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-
-                    if (isAllLabels) {{
+                    if (isAllLabels || array_length(ranges) <= 0) {{
                         global.modsubmenuselected = false;
+                    }}
+
+                    if (isAllLabels && array_length(ranges) > 0) {{
+                        var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
 
                         for (var i = 0; i < array_length(ranges); i++) {{
                             var range = ranges[i];
@@ -437,6 +442,13 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
 
                         variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
                     }}
+
+                    var func_name = ds_map_find_value(row_data, ""func_name"");
+                    if (!is_undefined(func_name))
+                    {{
+                        var functocall = variable_instance_get(global, func_name);
+                        functocall();
+                    }}
                 }}
             }}
             if (button2_p() && onebuffer < 0 && twobuffer < 0)
@@ -455,8 +467,10 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
         }} else {{
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var row_data = form_data[global.modsubmenuno];
-            var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
-            var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
+            var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
+            var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
+            var value_name = ds_map_find_value(row_data, ""value_name"");
+            var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
             
             if (right_h())
             {{
@@ -538,6 +552,13 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
                 onebuffer = 2;
                 twobuffer = 2;
                 global.modsubmenuselected = false;
+
+                var func_name = ds_map_find_value(row_data, ""func_name"");
+                if (!is_undefined(func_name))
+                {{
+                    var functocall = variable_instance_get(global, func_name);
+                    functocall();
+                }}
             }}
         }}
         
