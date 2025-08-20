@@ -7,12 +7,90 @@ Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brut
 [Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.1.2)
 
 ## Installation
-1. (optional) Backup your `DELTARUNE\` folder.
-2. Copy `customdifficulty_installfiles\` (for Windows & MacOS) & `customdifficulty_installer_windows.bat` (for Windows only) into your `DELTARUNE\` folder.
-3. Run `customdifficulty_installer_windows.bat` (if on Windows).
-   - <sub>If you're on MacOS, you could try the script from [this pull request](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/pull/2) ([branch for DL](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/tree/add-installer-for-macos)). Let me know if it works.</sub>
-   - <sub>Or you can manually apply the scripts to each chapter file using [UndertaleModTool](https://github.com/UnderminersTeam/UndertaleModTool/releases). Scripts > Run other script...
-4. Done! You can remove the installer & install files now if you want.</sub>
+
+### Windows
+1. Download the latest release and extract it
+2. Right-click `install-windows.ps1` → **Run with PowerShell**
+   - **If you get an execution policy error**, run this command in PowerShell instead:
+     ```powershell
+     powershell -ExecutionPolicy Bypass -File ./install-windows.ps1
+     ```
+3. Follow the prompts - the installer will:
+   - Auto-detect your DELTARUNE installation (or let you choose)
+   - Download UndertaleModTool CLI if needed
+   - Automatically backup your game files to `ModBackups/[timestamp]`
+   - Apply the mod to all chapters
+
+### macOS
+1. Download the latest release and extract it
+2. Double-click `install-macos.command` (or run in Terminal)
+3. Follow the prompts - the installer will:
+   - Auto-detect your DELTARUNE installation (or let you choose)
+   - Download UndertaleModTool CLI if needed
+   - Automatically backup your game files to `ModBackups/[timestamp]`
+   - Apply the mod to all chapters
+
+### Advanced Options
+
+#### Windows (`install-windows.ps1`)
+- `-Uninstall` - Restore from the most recent backup
+- `-NoBackup` - Skip creating backups before patching
+- `-GameDir <path>` - Specify DELTARUNE folder path (skips auto-detect)
+- `-UtmtCli <path>` - Path to UndertaleModCli.exe (skips download/search)
+
+Example: `.\install-windows.ps1 -NoBackup -GameDir "D:\Games\DELTARUNE"`
+
+#### macOS (`install-macos.command`)
+- `--uninstall` - Restore from the most recent backup
+- `--no-backup` - Skip creating backups before patching
+- `--app <path>` - Path to DELTARUNE.app (skips picker)
+- `--utmt <path>` - Path to UndertaleModCli (skips download/search)
+
+Example: `./install-macos.command --no-backup --app /Applications/DELTARUNE.app`
+
+### Manual Installation
+
+If the installation scripts don't work, you can manually install the mod using UndertaleModTool CLI:
+
+1. Download [UndertaleModTool CLI v0.8.3.0](https://github.com/UnderminersTeam/UndertaleModTool/releases/tag/0.8.3.0) for your platform
+2. Extract the CLI tool to a folder
+3. Apply the mod scripts to each chapter's data file:
+
+#### Windows Manual Commands
+```batch
+# First apply modmenu to all chapters
+UndertaleModCli.exe load "chapter1_windows\data.win" --scripts "src\modmenu_ch1to4.csx" --verbose false --output "chapter1_windows\data.win"
+UndertaleModCli.exe load "chapter2_windows\data.win" --scripts "src\modmenu_ch1to4.csx" --verbose false --output "chapter2_windows\data.win"
+UndertaleModCli.exe load "chapter3_windows\data.win" --scripts "src\modmenu_ch1to4.csx" --verbose false --output "chapter3_windows\data.win"
+UndertaleModCli.exe load "chapter4_windows\data.win" --scripts "src\modmenu_ch1to4.csx" --verbose false --output "chapter4_windows\data.win"
+
+# Then apply custom difficulty to all chapters
+UndertaleModCli.exe load "chapter1_windows\data.win" --scripts "src\customdifficulty_ch1to4.csx" --verbose false --output "chapter1_windows\data.win"
+UndertaleModCli.exe load "chapter2_windows\data.win" --scripts "src\customdifficulty_ch1to4.csx" --verbose false --output "chapter2_windows\data.win"
+UndertaleModCli.exe load "chapter3_windows\data.win" --scripts "src\customdifficulty_ch1to4.csx" --verbose false --output "chapter3_windows\data.win"
+UndertaleModCli.exe load "chapter4_windows\data.win" --scripts "src\customdifficulty_ch1to4.csx" --verbose false --output "chapter4_windows\data.win"
+```
+
+#### macOS Manual Commands
+```bash
+# First apply modmenu to all chapters
+./UndertaleModCli load chapter1_mac/game.ios --scripts src/modmenu_ch1to4.csx --verbose false --output chapter1_mac/game.ios
+./UndertaleModCli load chapter2_mac/game.ios --scripts src/modmenu_ch1to4.csx --verbose false --output chapter2_mac/game.ios
+./UndertaleModCli load chapter3_mac/game.ios --scripts src/modmenu_ch1to4.csx --verbose false --output chapter3_mac/game.ios
+./UndertaleModCli load chapter4_mac/game.ios --scripts src/modmenu_ch1to4.csx --verbose false --output chapter4_mac/game.ios
+
+# Then apply custom difficulty to all chapters
+./UndertaleModCli load chapter1_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter1_mac/game.ios
+./UndertaleModCli load chapter2_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter2_mac/game.ios
+./UndertaleModCli load chapter3_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter3_mac/game.ios
+./UndertaleModCli load chapter4_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter4_mac/game.ios
+```
+
+**Important Notes:**
+- Make sure to backup your game files before applying the mod manually
+- The mod scripts (`modmenu_ch1to4.csx` and `customdifficulty_ch1to4.csx`) must be applied in that order
+- Paths are relative to your DELTARUNE installation directory
+- On macOS, the chapter folders are inside `DELTARUNE.app/Contents/Resources/`
 
 ## How set options??
 1. Open menu in a dark world.
