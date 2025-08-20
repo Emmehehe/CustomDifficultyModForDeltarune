@@ -539,6 +539,14 @@ if (ch_no == 4) {
     importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.chapter == 4 && i_ex(obj_sound_of_justice_enemy) && obj_sound_of_justice_enemy.phase == 2)",
         "if (global.diff_hitall <= 0 && global.chapter == 4 && i_ex(obj_sound_of_justice_enemy) && obj_sound_of_justice_enemy.phase == 2)");
 }
+// Disable these weird down exceptions if hit.all=on
+if (ch_no == 3) {
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_maxhp", "if (global.hp[1] < 0)",
+        "if (global.diff_hitall <= 0 && global.hp[1] < 0)");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_fixed", "if (global.hp[1] < 0)",
+        "if (global.diff_hitall <= 0 && global.hp[1] < 0)");
+}
+
 
 // I-Frames
 string[] iFramers = {"gml_GlobalScript_scr_damage", "gml_GlobalScript_scr_damage_all", "gml_GlobalScript_scr_damage_all_overworld"};
