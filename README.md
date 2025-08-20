@@ -4,7 +4,7 @@ Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brut
 <img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.1.1)
+[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.1.2)
 
 ## Installation
 1. (optional) Backup your `DELTARUNE\` folder.
