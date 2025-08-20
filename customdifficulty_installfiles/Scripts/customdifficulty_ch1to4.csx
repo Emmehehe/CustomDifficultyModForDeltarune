@@ -17,7 +17,7 @@ if (alreadyInstalled != null) {
 }
 
 // Prefire checks
-const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
+const string expectedDisplayName = "DELTARUNE \\S+ ([1-4])";
 if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
 {
     ScriptError($"Error 0: data file display name does not match expected: '{expectedDisplayName}', actual display name: '{displayName}'.");
