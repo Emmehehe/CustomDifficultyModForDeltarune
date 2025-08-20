@@ -136,10 +136,14 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @"
     global.modsubmenuscroll = 0;
     global.modmenu_data = array_create(0);
     surf_modtitles = -1;
+
+    // some translation mods replace the english translation rather than using DR's built in localisation support, so can't always rely on global.lang and have to override for certain mods
+    global.modmenu_langoverride = """";
 ");
 
+string global_lang = @"(global.modmenu_langoverride != """" ? global.modmenu_langoverride : global.lang)";
 Func<string,string,string> ds_map_find_value_lang =
-    (id, key) => @$"(ds_map_exists({id}, {key} + ""_"" + global.lang) ? ds_map_find_value({id}, {key} + ""_"" + global.lang) :  ds_map_find_value({id}, {key} + ""_en""))";
+    (id, key) => @$"(ds_map_exists({id}, {key} + ""_"" + {global_lang}) ? ds_map_find_value({id}, {key} + ""_"" + {global_lang}) :  ds_map_find_value({id}, {key} + ""_en""))";
 
 // Add menu draw code
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Draw_0", "msprite[4] = spr_darkconfigbt;", @"
@@ -157,7 +161,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
     {{
         draw_set_color(c_black);
         
-        if (global.lang == ""ja"")
+        if ({global_lang} == ""ja"")
         {{
             draw_rectangle(xx + 60, yy + 85, xx + 580, yy + 412, false);
             scr_darkbox(xx + 50, yy + 75, xx + 590, yy + 422);
@@ -220,9 +224,9 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         }}
 
         // form buttons
-        var _xPos = (global.lang == ""en"") ? (xx + 170) : (xx + 150);
-        var _heartXPos = (global.lang == ""en"") ? (xx + 145) : (xx + 125);
-        var _selectXPos = (global.lang == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
+        var _xPos = ({global_lang} != ""ja"") ? (xx + 170) : (xx + 150);
+        var _heartXPos = ({global_lang} != ""ja"") ? (xx + 145) : (xx + 125);
+        var _selectXPos = ({global_lang} == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
 
         draw_set_color(c_white);
 
@@ -302,6 +306,12 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Step_0", "global.menucoord[0] = 4;", "global.menucoord[0] = array_length(global.modmenu_data) <= 0 ? 4 : 5;");
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Step_0", "if (global.menucoord[0] == 4)", "if (global.menucoord[0] == (array_length(global.modmenu_data) <= 0 ? 4 : 5))");
 importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
+    // override for deltaesp's spanish translation
+    if (global.modmenu_langoverride != ""es"" && global.lang == ""en"" && variable_instance_exists(global, ""esp_names""))
+    {{
+        global.modmenu_langoverride = ""es"";
+    }}
+
     if (global.menuno == 6)
     {{
         var isSubmenu = (global.modsubmenuno >= 0);

@@ -127,43 +127,53 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
 
     var menudata = ds_map_create();
     ds_map_add(menudata, ""title_en"", ""Difficulty"");
+    ds_map_add(menudata, ""title_es"", ""Difficulty""); // TODO Spanish/Español
 
     var formdata = array_create(0);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
+    ds_map_add(rowdata, ""title_es"", ""Damage Multi""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INF=2147483647"");
+    ds_map_add(rowdata, ""value_range_es"", ""0-1000%;INF=2147483647""); // TODO verify Spanish/Español translation
     ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
     array_push(formdata, rowdata);
 
     {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
+    ds_map_add(rowdata, ""title_es"", ""Gameboard Dmg X""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
+    ds_map_add(rowdata, ""value_range_es"", ""HEREDAR=-1;0-1000%;INF=2147483647""); // TODO verify Spanish/Español translation
     ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
     array_push(formdata, rowdata);
     ")}
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Hit.All"");
+    ds_map_add(rowdata, ""title_es"", ""Hit.All""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+    ds_map_add(rowdata, ""value_range_es"", ""NO=0;SÍ=1""); // TODO verify Spanish/Español translation
     ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""I-Frames"");
+    ds_map_add(rowdata, ""title_es"", ""I-Frames""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
     ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""TP Gain"");
+    ds_map_add(rowdata, ""title_es"", ""TP Gain""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
     ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
+    ds_map_add(rowdata, ""title_es"", ""Battle Rewards""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
     ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
     array_push(formdata, rowdata);
@@ -171,32 +181,40 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     {(ch_no != 3 ? "" : @"
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Reward Ranking"");
+    ds_map_add(rowdata, ""title_es"", ""Reward Ranking""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+    ds_map_add(rowdata, ""value_range_es"", ""NO=0;SÍ=1""); // TODO verify Spanish/Español translation
     ds_map_add(rowdata, ""value_name"", ""diff_rewardranking"");
     array_push(formdata, rowdata);
     ")}
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
+    ds_map_add(rowdata, ""title_es"", ""Down Deficit""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
     ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
+    ds_map_add(rowdata, ""title_es"", ""Downed Regen""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
+    ds_map_add(rowdata, ""value_range_es"", ""0-1000%;INSTANTE=2147483647""); // TODO verify Spanish/Español translation
     ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
     array_push(formdata, rowdata);
 
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Victory Res"");
+    ds_map_add(rowdata, ""title_es"", ""Victory Res""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
+    ds_map_add(rowdata, ""value_range_es"", ""NO=-1;0-100%""); // TODO verify Spanish/Español translation
     ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
     array_push(formdata, rowdata);
 
     // TODO requires a refactor to modmenu but would be much better to be able to have menu buttons trigger a function, this is a hacky work-a-round
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
+    ds_map_add(rowdata, ""title_es"", ""Reset to Defaults""); // TODO Spanish/Español
     ds_map_add(rowdata, ""value_range_en"", ""=0;=1"");
     ds_map_add(rowdata, ""value_name"", ""diff_resettodefaults"");
     array_push(formdata, rowdata);
