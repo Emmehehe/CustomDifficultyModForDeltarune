@@ -9,26 +9,50 @@ Mod that adds difficulty options to Deltarune. Make the game easy, hard, or brut
 ## Installation
 
 ### Windows
-1. Download the latest release and extract it
-2. Right-click `install-windows.ps1` → **Run with PowerShell**
-   - **If you get an execution policy error**, run this command in PowerShell instead:
-     ```powershell
-     powershell -ExecutionPolicy Bypass -File ./install-windows.ps1
-     ```
-3. Follow the prompts - the installer will:
-   - Auto-detect your DELTARUNE installation (or let you choose)
-   - Download UndertaleModTool CLI if needed
-   - Automatically backup your game files to `ModBackups/[timestamp]`
-   - Apply the mod to all chapters
+
+**Quick start**
+1) Download and unzip the release
+2) Double-click `install-windows.cmd`
+
+**What it does**
+- Finds your DELTARUNE install (or lets you choose)
+- Downloads UndertaleModTool CLI if missing
+- Backs up originals to `ModBackups/<timestamp>`
+- Patches all chapters; safe to re-run
+
+**CLI (alternative)**
+```powershell
+.\install-windows.cmd
+````
+
+**If blocked**
+
+* SmartScreen: “More info → Run anyway” or right-click → Properties → Unblock
+* Permission denied under Program Files/Steam: run as Administrator
 
 ### macOS
-1. Download the latest release and extract it
-2. Double-click `install-macos.command` (or run in Terminal)
-3. Follow the prompts - the installer will:
-   - Auto-detect your DELTARUNE installation (or let you choose)
-   - Download UndertaleModTool CLI if needed
-   - Automatically backup your game files to `ModBackups/[timestamp]`
-   - Apply the mod to all chapters
+
+**Quick start**
+
+1. Download and unzip the release
+2. Double-click `install-macos.command`
+
+**What it does**
+
+* Detects your DELTARUNE install (or prompts)
+* Downloads UndertaleModTool CLI if needed
+* Backs up to `ModBackups/<timestamp>`
+* Patches all chapters; safe to re-run
+
+**CLI (alternative)**
+
+```bash
+./install-macos.command
+```
+
+**If blocked**
+
+* Right-click → Open, or allow in System Settings → Privacy & Security
 
 ### Advanced Options
 
