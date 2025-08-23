@@ -4,13 +4,13 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 <img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.1.2)**
+**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.2.0)**
 
 ## What you can change
 - **Damage Multi** — multiply all incoming damage by this value
   - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
-  - For weird attacks that deal damage as a percentage of the current HP, instead uses exponential logic to determine damage scaling. e.g. An attack that normally does 50% of your HP in vanilla, instead does 70.7% with double damage, and 25% with half damage. The calculation is thus: `dmgratio = vanilladmgratio^(1/dmgmulti)`.
-  - For any damage over time effects, either tick faster, or apply more damage, or combination of both - where appropriate - proportionate with the multiplier that has been set.
+  - For attacks that deal damage as a percentage of the current HP, instead uses exponential logic to determine damage scaling. e.g. An attack that normally does 50% of your HP in vanilla, instead does 70.7% with double damage, and 25% with half damage. The calculation is thus: `dmgratio = vanilladmgratio^(1/dmgmulti)`.
+  - For any damage over time effects, either tick faster, apply more damage, or combination of both - where appropriate - proportionate with the multiplier that has been set.
 
 - **Hit.All** — when switched on, hits that target a single character instead hits the entire party
   - For no-hit runs, combine this setting with `Damage Multi=INF`.
