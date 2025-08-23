@@ -19,7 +19,7 @@ if (alreadyInstalled != null) {
 }
 
 // Prefire checks
-const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
+const string expectedDisplayName = "DELTARUNE \\S+ ([1-4])";
 if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
 {
     ScriptError($"Error 0: data file display name does not match expected: '{expectedDisplayName}', actual display name: '{displayName}'.");
@@ -136,10 +136,14 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @"
     global.modsubmenuscroll = 0;
     global.modmenu_data = array_create(0);
     surf_modtitles = -1;
+
+    // some translation mods replace the english translation rather than using DR's built in localisation support, so can't always rely on global.lang and have to override for certain mods
+    global.modmenu_langoverride = """";
 ");
 
+string global_lang = @"(global.modmenu_langoverride != """" ? global.modmenu_langoverride : global.lang)";
 Func<string,string,string> ds_map_find_value_lang =
-    (id, key) => @$"(ds_map_exists({id}, {key} + ""_"" + global.lang) ? ds_map_find_value({id}, {key} + ""_"" + global.lang) :  ds_map_find_value({id}, {key} + ""_en""))";
+    (id, key) => @$"(ds_map_exists({id}, {key} + ""_"" + {global_lang}) ? ds_map_find_value({id}, {key} + ""_"" + {global_lang}) :  ds_map_find_value({id}, {key} + ""_en""))";
 
 // Add menu draw code
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Draw_0", "msprite[4] = spr_darkconfigbt;", @"
@@ -157,7 +161,7 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
     {{
         draw_set_color(c_black);
         
-        if (global.lang == ""ja"")
+        if ({global_lang} == ""ja"")
         {{
             draw_rectangle(xx + 60, yy + 85, xx + 580, yy + 412, false);
             scr_darkbox(xx + 50, yy + 75, xx + 590, yy + 422);
@@ -220,9 +224,9 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
         }}
 
         // form buttons
-        var _xPos = (global.lang == ""en"") ? (xx + 170) : (xx + 150);
-        var _heartXPos = (global.lang == ""en"") ? (xx + 145) : (xx + 125);
-        var _selectXPos = (global.lang == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
+        var _xPos = ({global_lang} != ""ja"") ? (xx + 170) : (xx + 150);
+        var _heartXPos = ({global_lang} != ""ja"") ? (xx + 145) : (xx + 125);
+        var _selectXPos = ({global_lang} == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
 
         draw_set_color(c_white);
 
@@ -250,8 +254,10 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
                 var row_data = form_data[i];
                 draw_text(_xPos, yy + 150 + (i - global.modsubmenuscroll) * 35, string_hash_to_newline({ds_map_find_value_lang("row_data", @"""title""")}));
 
-                var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-                var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
+                var value_name = ds_map_find_value(row_data, ""value_name"");
+                var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
+                var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
+                var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
                 var valueString = """";
 
                 for (var j = 0; j < array_length(ranges); j++) {{
@@ -302,6 +308,12 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Draw_0", @$"
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Step_0", "global.menucoord[0] = 4;", "global.menucoord[0] = array_length(global.modmenu_data) <= 0 ? 4 : 5;");
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_darkcontroller_Step_0", "if (global.menucoord[0] == 4)", "if (global.menucoord[0] == (array_length(global.modmenu_data) <= 0 ? 4 : 5))");
 importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
+    // override for deltaesp's spanish translation
+    if (global.modmenu_langoverride != ""es"" && global.lang == ""en"" && variable_instance_exists(global, ""esp_names""))
+    {{
+        global.modmenu_langoverride = ""es"";
+    }}
+
     if (global.menuno == 6)
     {{
         var isSubmenu = (global.modsubmenuno >= 0);
@@ -403,7 +415,8 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
 
                     // if range is only labels just cycle through them
                     var row_data = form_data[global.modsubmenuno];
-                    var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
+                    var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
+                    var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
                     var isAllLabels = true;
 
                     for (var i = 0; i < array_length(ranges); i++) {{
@@ -414,10 +427,12 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
                         }}
                     }}
 
-                    var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
-
-                    if (isAllLabels) {{
+                    if (isAllLabels || array_length(ranges) <= 0) {{
                         global.modsubmenuselected = false;
+                    }}
+
+                    if (isAllLabels && array_length(ranges) > 0) {{
+                        var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
 
                         for (var i = 0; i < array_length(ranges); i++) {{
                             var range = ranges[i];
@@ -437,6 +452,13 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
 
                         variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
                     }}
+
+                    var func_name = ds_map_find_value(row_data, ""func_name"");
+                    if (!is_undefined(func_name))
+                    {{
+                        var functocall = variable_instance_get(global, func_name);
+                        functocall();
+                    }}
                 }}
             }}
             if (button2_p() && onebuffer < 0 && twobuffer < 0)
@@ -455,8 +477,10 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
         }} else {{
             var form_data = ds_map_find_value(global.modmenu_data[global.modmenuno], ""form"");
             var row_data = form_data[global.modsubmenuno];
-            var ranges = string_split({ds_map_find_value_lang("row_data", @"""value_range""")}, "";"");
-            var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
+            var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
+            var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
+            var value_name = ds_map_find_value(row_data, ""value_name"");
+            var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
             
             if (right_h())
             {{
@@ -538,6 +562,13 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
                 onebuffer = 2;
                 twobuffer = 2;
                 global.modsubmenuselected = false;
+
+                var func_name = ds_map_find_value(row_data, ""func_name"");
+                if (!is_undefined(func_name))
+                {{
+                    var functocall = variable_instance_get(global, func_name);
+                    functocall();
+                }}
             }}
         }}
         

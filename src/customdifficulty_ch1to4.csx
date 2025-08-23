@@ -17,7 +17,7 @@ if (alreadyInstalled != null) {
 }
 
 // Prefire checks
-const string expectedDisplayName = "DELTARUNE Chapter ([1-4])";
+const string expectedDisplayName = "DELTARUNE \\S+ ([1-4])";
 if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
 {
     ScriptError($"Error 0: data file display name does not match expected: '{expectedDisplayName}', actual display name: '{displayName}'.");
@@ -39,21 +39,25 @@ importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function sc
     {{
         var installed_customdifficulty = true;
 
-        global.diff_damagemulti = 1;
-        {(ch_no != 3 ? "" : @"
-        global.diff_gameboarddmgx = -1;
-        ")}
-        global.diff_hitall = 0;
-        global.diff_iframes = 1;
-        global.diff_tpgain = 1;
-        global.diff_battlerewards = 1;
-        {(ch_no != 3 ? "" : @"
-        global.diff_rewardranking = 0;
-        ")}
-        global.diff_downdeficit = 1 / 2;
-        global.diff_downedregen = 1 / 8;
-        global.diff_victoryres = 1 / 8;
-        global.diff_resettodefaults = 0;
+        global.diff_resettodefaults = function()
+        {{
+            global.diff_damagemulti = 1;
+            {(ch_no != 3 ? "" : @"
+            global.diff_gameboarddmgx = -1;
+            ")}
+            global.diff_hitall = 0;
+            global.diff_iframes = 1;
+            global.diff_tpgain = 1;
+            global.diff_battlerewards = 1;
+            {(ch_no != 3 ? "" : @"
+            global.diff_rewardranking = 0;
+            ")}
+            global.diff_downdeficit = 1 / 2;
+            global.diff_downedregen = 1 / 8;
+            global.diff_victoryres = 1 / 8;
+        }}
+
+        global.diff_resettodefaults();
 
     ");
 // Load globals from config
@@ -194,37 +198,14 @@ importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
     ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
     array_push(formdata, rowdata);
 
-    // TODO requires a refactor to modmenu but would be much better to be able to have menu buttons trigger a function, this is a hacky work-a-round
     var rowdata = ds_map_create();
     ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
-    ds_map_add(rowdata, ""value_range_en"", ""=0;=1"");
-    ds_map_add(rowdata, ""value_name"", ""diff_resettodefaults"");
+    ds_map_add(rowdata, ""func_name"", ""diff_resettodefaults"");
     array_push(formdata, rowdata);
 
     ds_map_add(menudata, ""form"", formdata);
 
     array_push(global.modmenu_data, menudata);
-");
-
-importGroup.QueueAppend("gml_Object_obj_darkcontroller_Step_0", @$"
-    if (global.diff_resettodefaults > 0)
-    {{
-        global.diff_damagemulti = 1;
-        {(ch_no != 3 ? "" : @"
-        global.diff_gameboarddmgx = -1;
-        ")}
-        global.diff_hitall = 0;
-        global.diff_iframes = 1;
-        global.diff_tpgain = 1;
-        global.diff_battlerewards = 1;
-        {(ch_no != 3 ? "" : @"
-        global.diff_rewardranking = 0;
-        ")}
-        global.diff_downdeficit = 1 / 2;
-        global.diff_downedregen = 1 / 8;
-        global.diff_victoryres = 1 / 8;
-        global.diff_resettodefaults = 0;
-    }}
 ");
 
 string[] damageLikes = {"gml_GlobalScript_scr_damage"};
