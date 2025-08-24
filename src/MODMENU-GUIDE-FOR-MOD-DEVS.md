@@ -74,7 +74,7 @@ Multiple ranges can be combined using `;`. Ranges MUST be defined in order. e.g.
  - `"0-200%"` — User can slide the value between 0% to 200%, the value is set between 0 and 2.
  - `"OFF=0;ON=1"` — User can toggle between 'OFF' and 'ON', the value is set to either 0 (off) or 1 (on).
  - `"RED=16711680;GREEN=65280;BLUE=255"` — User can toggle through 'RED', 'GREEN', and 'BLUE', the value is set appropriately.
- - `"OFF=-1;0-1000%;"` — User can slide the value between 0% to 1000%, the value is set between 0 and 10. Additionally, if the user slides the value below 0%, they can set the option to 'OFF', aka -1.
+ - `"OFF=-1;0-1000%"` — User can slide the value between 0% to 1000%, the value is set between 0 and 10. Additionally, if the user slides the value below 0%, they can set the option to 'OFF', aka -1.
 
 ## Localisation
 The mod menu supports localisation by reading the `global.lang` variable that comes with Deltarune, and looking up attributes that are postfixed with that lang string.
