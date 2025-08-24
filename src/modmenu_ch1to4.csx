@@ -192,7 +192,7 @@ if (ch_no == 0) {
         importGroup.QueuePrepend(darkcon + "_Draw_0", string_ends_with);
 
         // WARNING: only trims spaces, not other types of whitespace
-        // WARNING: only trims spaces from the start of the string
+        // WARNING: only trims whitespace from the start of the string
         string string_trim = @"
             function string_trim(arg0)
             {
