@@ -1,0 +1,84 @@
+# Mod Menu Guide for Mod Devs
+Mod Menu is a mod framework that can be used to quickly add config menus for other mods. Does nothing on its own.
+
+For an example of this mod in action see the [Custom Difficulty mod](https://gamebanana.com/mods/613308).
+For reference, you can see the exact code that this mod uses to configure its menu [here](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/blob/1.3.0/src/customdifficulty_ch1to4.csx#L159-L250).
+There's also an example of setting up the variables and saving/loading them if you scroll up.
+
+## Steps to create a menu using the framework
+
+In `gml_Object_obj_darkcontroller_Create_0` & `gml_Object_obj_darkcontroller_ch1_Create_0`(for demo only):
+1. Make sure the `modmenu_data` var is set up.
+```
+if (!variable_instance_exists(global, "modmenu_data"))
+  global.modmenu_data = array_create(0);
+```
+2. Start defining your mod's menu and give it a title. 
+```
+var menudata = ds_map_create();
+ds_map_add(menudata, "title_en", "<My Cool Mod for Deltarune>");
+```
+3. Start defining the form controls for your menu.
+```
+var formdata = array_create(0);
+```
+4. Add as many rows to the form as you need. Each row could be a slider/toggle that controls a global variable, or a button that triggers a global function.
+
+<i>Slider/Toggle:</i>
+```
+var rowdata = ds_map_create();
+ds_map_add(rowdata, "title_en", "<My Cool Option>");
+ds_map_add(rowdata, "value_range_en", "<value range string (see #Value Ranges below)>");
+ds_map_add(rowdata, "value_name", "<somevarname>");
+array_push(formdata, rowdata);
+```
+<i>Button:</i>
+  ```
+var rowdata = ds_map_create();
+ds_map_add(rowdata, "title_en", "<My Cool Button>");
+ds_map_add(rowdata, "func_name", "<somefuncname>");
+array_push(formdata, rowdata);
+  ```
+5. Finish defining the form controls, and menu.
+```
+ds_map_add(menudata, "form", formdata);
+array_push(global.modmenu_data, menudata);
+```
+
+## Config Explained
+
+- title_en — English title for the mod's menu.
+- form — Array containing rows for controls and buttons.
+  - title_en — English title for the control/button.
+  - value_range_en (optional) — English value range string for the control.
+    - Simple examples: `"0-100%"`, `"OFF=0;ON=1"`, `"OFF=-1;0-100%"`.
+    - See [Value Ranges](#Value-Ranges) for a more detailed explaination.
+  - value_name (required if value_range_en is set) — Name of the global variable this control should adjust.
+    - e.g. Set to `"coolmod_funvalue"` for variable `global.coolmod_funvalue`.
+  - func_name (optional) — Name of the global function this control/button should trigger.
+    - e.g. Set to `"coolmod_dofunthings"` for function `global.coolmod_dofunthings`.
+    - This can also be specified for a control, will trigger immediately after the user confirms the control if so.
+
+## Value Ranges
+
+Value range strings allow you to define how a control behaves when the user interacts with it.
+
+Types of value range:
+ - Label: `<label name>=<value>` — Sets the variable to the given decimal value, the user sees the label name.
+ - Percentage: `<min>-<max>%` — Sets the variable between a range of decimal values, the user sees a percentage. Inclusive.
+
+Multiple ranges can be combined using `;`. Ranges MUST be defined in order. e.g. `"OFF=0;ON=1"` is valid, but `"ON=1;OFF=0"` is invalid.
+
+**Example range strings:**
+ - `"0-100%"` — User can slide the value between 0% to 100%, the value is set between 0 and 1.
+ - `"0-200%"` — User can slide the value between 0% to 200%, the value is set between 0 and 2.
+ - `"OFF=0;ON=1"` — User can toggle between 'OFF' and 'ON', the value is set to either 0 (off) or 1 (on).
+ - `"RED=16711680;GREEN=65280;BLUE=255"` — User can toggle through 'RED', 'GREEN', and 'BLUE', the value is set appropriately.
+ - `"OFF=-1;0-1000%;"` — User can slide the value between 0% to 1000%, the value is set between 0 and 10. Additionally, if the user slides the value below 0%, they can set the option to 'OFF', aka -1.
+
+## Localisation
+The mod menu supports localisation by reading the `global.lang` variable that comes with Deltarune, and looking up attributes that are postfixed with that lang string.
+
+For English the mod menu will read all attributes with the '_en' postfix, for Japanese it will look for the '_ja' postfix. If no attribute for the lang postfix can be found the mod menu will default to English.
+
+It's recommended to use the [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) standard for lang strings if you are adding additional languages.
