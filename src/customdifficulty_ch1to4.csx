@@ -133,8 +133,8 @@ if (ch_no == 0)
 }
 foreach (string scrName in saveLikes)
 {
-    importGroup.QueueTrimmedLinesFindReplace(scrName, $"var is_valid = ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);", @$"
-        var is_valid = ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);
+    importGroup.QueueTrimmedLinesFindReplace(scrName, $"{(ch_no == 0 ? "var is_valid = " : "")}ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);", @$"
+        {(ch_no == 0 ? "var is_valid = " : "")}ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
         ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
