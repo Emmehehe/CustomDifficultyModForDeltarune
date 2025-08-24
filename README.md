@@ -4,7 +4,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 <img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.2.0)**
+**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.3.0)**
 
 ## What you can change
 - **Damage Multi** — multiply all incoming damage by this value
@@ -24,15 +24,13 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 <details> 
   <summary><strong>CHAPTER 3 SPOILERS...</strong></summary>
 
-  > #### Gameboard Dmg X
-  > Multiplier for the damage in the chapter 3 game boards.
-  > - Only shows up in the menu in chapter 3.
-  > - INHERIT - Can be set to inherit from the 'Damage Multi' setting by reducing past 0%.
-  > - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
-  >
-  > #### Reward Ranking
-  > When this option is turned on, the 'Battle Rewards' option also affects the ranking that you get from battles in the chapter 3 game boards.
-  > - Only shows up in the menu in chapter 3.
+  - **Gameboard Dmg X** — Multiplier for the damage in the chapter 3 game boards.
+    - Only shows up in the menu in chapter 3.
+    - INHERIT - Can be set to inherit from the 'Damage Multi' setting by reducing past 0%.
+    - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
+  
+  - **Reward Ranking** — When this option is turned on, the 'Battle Rewards' option also affects the ranking that you get from battles in the chapter 3 game boards.
+    - Only shows up in the menu in chapter 3.
 </details>
 
 ## How to use
@@ -40,7 +38,16 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 1. Open the menu in a dark world.
 2. Go to **MODS** and adjust settings.
 
-## Installation
+## Installation via Deltamod
+**Full game**
+- modmenu-deltamod.zip
+- custom-difficulty-deltamod.zip
+
+**Demo**
+- modmenu-demo-deltamod.zip
+- custom-difficulty-demo-deltamod.zip
+
+## Installation without Deltamod
 
 ### Windows
 **Quick start**
