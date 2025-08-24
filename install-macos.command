@@ -97,6 +97,12 @@ pick_app_if_needed() {
   DEFAULT_APP="$HOME/Library/Application Support/Steam/steamapps/common/DELTARUNE/DELTARUNE.app"
   if [[ -d "$DEFAULT_APP" ]]; then APP_PATH="$DEFAULT_APP"; fi
 
+  # If no game found, try to find demo
+  if [[ -z "$APP_PATH" ]]; then
+    DEFAULT_DEMO_APP="$HOME/Library/Application Support/Steam/steamapps/common/DELTARUNEdemo/DELTARUNE.app"
+    if [[ -d "$DEFAULT_DEMO_APP" ]]; then APP_PATH="$DEFAULT_DEMO_APP"; fi
+  fi
+
   # Ask user to confirm or pick
   if [[ -n "$APP_PATH" ]]; then
     echo "Detected: $APP_PATH"
@@ -129,6 +135,12 @@ find_chapter_files() {
     local f="$RES/chapter${ch}_mac/game.ios"
     [[ -f "$f" ]] && files+=("$f")
   done
+  # If no chapter files found, assume this is the demo
+  if (( ${#files[@]} == 0 )); then
+    log "No chapter files found, attempting install for demo. "
+    local f="$RES/game.ios"
+    [[ -f "$f" ]] && files+=("$f")
+  fi
   printf '%s\n' "${files[@]:-}"
 }
 

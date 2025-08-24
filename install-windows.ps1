@@ -148,6 +148,13 @@ function Detect-GameDir {
     $try = Join-Path $c 'DELTARUNE'
     if (Test-Path $try) { $found = $try; break }
   }
+  # If no game found, try to find demo
+  if (-not ($found)) {
+      foreach ($c in $candidates) {
+        $try = Join-Path $c 'DELTARUNEdemo'
+        if (Test-Path $try) { $found = $try; break }
+      }
+  }
   if ($found) {
     Write-Host "Detected: $found"
     $ok = Read-Host 'Use this path? [Y/n]'
@@ -169,6 +176,14 @@ function Find-ChapterFiles {
   for ($ch = 1; $ch -le 4; $ch++) {
     # Windows uses chapterX_windows\data.win pattern
     $f = Join-Path $GamePath "chapter${ch}_windows\data.win"
+    if (Test-Path $f) { 
+      $files += Get-Item $f 
+    }
+  }
+  # If no chapter files found, assume this is the demo
+  Log ("No chapter files found, attempting install for demo. ")
+  if ($files.Count -eq 0) {
+    $f = Join-Path $GamePath "data.win"
     if (Test-Path $f) { 
       $files += Get-Item $f 
     }
