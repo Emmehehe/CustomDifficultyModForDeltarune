@@ -1,0 +1,15 @@
+{
+    "metadata": {
+        "name": "Modmenu",
+        "version": "1.2.0",
+        "description": "Modmenu for DELTARUNE. Framework for mods to add option menus.",
+        "author": ["Emmahaha"],
+        "demoMod": true
+    },
+    "neededFiles": [
+        {
+            "file": "data.win",
+            "checksum": "4de4118ba4ad4243025e61337fe796532751032c0a04d0843d8b35f91ec2c220"
+        }
+    ]
+}
