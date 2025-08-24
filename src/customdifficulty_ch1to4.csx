@@ -17,13 +17,20 @@ if (alreadyInstalled != null) {
 }
 
 // Prefire checks
-const string expectedDisplayName = "DELTARUNE \\S+ ([1-4])";
+const string expectedDisplayName = "DELTARUNE \\S+ ([1-4](?:&2)?)";
 if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
 {
     ScriptError($"Error 0: data file display name does not match expected: '{expectedDisplayName}', actual display name: '{displayName}'.");
     return;
 }
-ushort ch_no = ushort.Parse(Regex.Match(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)).Groups[1].Captures[0].Value);
+
+// Determine chapter
+string ch_no_str = Regex.Match(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)).Groups[1].Captures[0].Value;
+ushort ch_no = 0;
+if (ch_no_str == "1&2")
+    ch_no = 0; // 0 = demo
+else
+    ch_no = ushort.Parse(Regex.Match(displayName, expectedDisplayName, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)).Groups[1].Captures[0].Value);
 
 // Begin edit
 ScriptMessage($"Adding custom difficulty to '{displayName}'...");
@@ -34,37 +41,52 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
 };
 
 // Add globals
-importGroup.QueueRegexFindReplace("gml_GlobalScript_scr_gamestart", "function scr_gamestart\\(\\)\\s*{", @$"
-    function scr_gamestart()
-    {{
-        var installed_customdifficulty = true;
-
-        global.diff_resettodefaults = function()
+string[] gamestartLikes = {"gml_GlobalScript_scr_gamestart"};
+if (ch_no == 0)
+{
+    string[] demoGamestartLikes = {"gml_GlobalScript_scr_gamestart_ch1"};
+    gamestartLikes = gamestartLikes.Concat(demoGamestartLikes).ToArray();
+}
+foreach (string scrName in gamestartLikes)
+{
+    importGroup.QueueRegexFindReplace(scrName, "function scr_gamestart(?:_ch1)?\\(\\)\\s*{", @$"
+        function scr_gamestart{(scrName.EndsWith("_ch1") ? "_ch1" : "")}()
         {{
-            global.diff_damagemulti = 1;
-            {(ch_no != 3 ? "" : @"
-            global.diff_gameboarddmgx = -1;
-            ")}
-            global.diff_hitall = 0;
-            global.diff_iframes = 1;
-            global.diff_tpgain = 1;
-            global.diff_battlerewards = 1;
-            {(ch_no != 3 ? "" : @"
-            global.diff_rewardranking = 0;
-            ")}
-            global.diff_downdeficit = 1 / 2;
-            global.diff_downedregen = 1 / 8;
-            global.diff_victoryres = 1 / 8;
-        }}
+            var installed_customdifficulty = true;
 
-        global.diff_resettodefaults();
+            global.diff_resettodefaults = function()
+            {{
+                global.diff_damagemulti = 1;
+                {(ch_no != 3 ? "" : @"
+                global.diff_gameboarddmgx = -1;
+                ")}
+                global.diff_hitall = 0;
+                global.diff_iframes = 1;
+                global.diff_tpgain = 1;
+                global.diff_battlerewards = 1;
+                {(ch_no != 3 ? "" : @"
+                global.diff_rewardranking = 0;
+                ")}
+                global.diff_downdeficit = 1 / 2;
+                global.diff_downedregen = 1 / 8;
+                global.diff_victoryres = 1 / 8;
+            }}
 
-    ");
+            global.diff_resettodefaults();
+
+        ");
+}
+
 // Load globals from config
 string[] loadLikes = {"gml_GlobalScript_scr_load"};
-if (ch_no > 1)
+if (ch_no > 1 || ch_no == 0)
 {
     string[] loadCh1 = {"gml_GlobalScript_scr_load_chapter1"};
+    loadLikes = loadLikes.Concat(loadCh1).ToArray();
+}
+if (ch_no == 0)
+{
+    string[] loadCh1 = {"gml_GlobalScript_scr_load_ch1"};
     loadLikes = loadLikes.Concat(loadCh1).ToArray();
 }
 if (ch_no > 2)
@@ -78,9 +100,9 @@ if (ch_no > 3)
     loadLikes = loadLikes.Concat(loadCh3).ToArray();
 }
 foreach (string scrName in loadLikes)
-{   
-    importGroup.QueueTrimmedLinesFindReplace(scrName, "ossafe_file_text_close(myfileid);", @$"
-        ossafe_file_text_close(myfileid);
+{
+    importGroup.QueueTrimmedLinesFindReplace(scrName, $"ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);", @$"
+        ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
         global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", 1);
@@ -101,115 +123,139 @@ foreach (string scrName in loadLikes)
 
         ");
 }
-// Save globals to config
-importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_saveprocess", "ossafe_file_text_close(myfileid);", @$"
-    ossafe_file_text_close(myfileid);
 
-    ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
-    ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
-    {(ch_no != 3 ? "" : @"
-    ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
-    ")}
-    ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
-    ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
-    ini_write_real(""DIFFICULTY"", ""TP_GAIN"", global.diff_tpgain);
-    ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
-    {(ch_no != 3 ? "" : @"
-    ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
-    ")}
-    ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
-    ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
-    ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
-    ossafe_ini_close();
-    ");
+// Save globals to config
+string[] saveLikes = {"gml_GlobalScript_scr_saveprocess"};
+if (ch_no == 0)
+{
+    string[] demoSaveLikes = {"gml_GlobalScript_scr_saveprocess_ch1"};
+    saveLikes = saveLikes.Concat(demoSaveLikes).ToArray();
+}
+foreach (string scrName in saveLikes)
+{
+    importGroup.QueueTrimmedLinesFindReplace(scrName, $"var is_valid = ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);", @$"
+        var is_valid = ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);
+
+        ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
+        ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
+        {(ch_no != 3 ? "" : @"
+        ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
+        ")}
+        ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
+        ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
+        ini_write_real(""DIFFICULTY"", ""TP_GAIN"", global.diff_tpgain);
+        ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
+        {(ch_no != 3 ? "" : @"
+        ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
+        ")}
+        ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
+        ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
+        ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
+        ossafe_ini_close();
+        ");
+}
 
 // Add mod menu
-importGroup.QueueAppend("gml_Object_obj_darkcontroller_Create_0", @$"
-    
-    if (!variable_instance_exists(global, ""modmenu_data""))
-        global.modmenu_data = array_create(0);
+string[] darkcons = {"gml_Object_obj_darkcontroller"};
+if (ch_no == 0)
+{
+    string[] demoDarkcons = {"gml_Object_obj_darkcontroller_ch1"};
+    darkcons = darkcons.Concat(demoDarkcons).ToArray();
+}
+foreach (string darkcon in darkcons)
+{
+    importGroup.QueueAppend(darkcon + "_Create_0", @$"
 
-    var menudata = ds_map_create();
-    ds_map_add(menudata, ""title_en"", ""Difficulty"");
+        if (!variable_instance_exists(global, ""modmenu_data""))
+            global.modmenu_data = array_create(0);
 
-    var formdata = array_create(0);
+        var menudata = ds_map_create();
+        ds_map_add(menudata, ""title_en"", ""Difficulty"");
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INF=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
-    array_push(formdata, rowdata);
+        var formdata = array_create(0);
 
-    {(ch_no != 3 ? "" : @"
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
-    ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
-    array_push(formdata, rowdata);
-    ")}
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INF=2147483647"");
+        ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
+        array_push(formdata, rowdata);
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Hit.All"");
-    ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
-    ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
-    array_push(formdata, rowdata);
+        {(ch_no != 3 ? "" : @"
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
+        ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
+        ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
+        array_push(formdata, rowdata);
+        ")}
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""I-Frames"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
-    ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
-    array_push(formdata, rowdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Hit.All"");
+        ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+        ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
+        array_push(formdata, rowdata);
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""TP Gain"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
-    ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
-    array_push(formdata, rowdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""I-Frames"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
+        array_push(formdata, rowdata);
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
-    ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
-    array_push(formdata, rowdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""TP Gain"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
+        array_push(formdata, rowdata);
 
-    {(ch_no != 3 ? "" : @"
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Reward Ranking"");
-    ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
-    ds_map_add(rowdata, ""value_name"", ""diff_rewardranking"");
-    array_push(formdata, rowdata);
-    ")}
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
+        array_push(formdata, rowdata);
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
-    array_push(formdata, rowdata);
+        {(ch_no != 3 ? "" : @"
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Reward Ranking"");
+        ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+        ds_map_add(rowdata, ""value_name"", ""diff_rewardranking"");
+        array_push(formdata, rowdata);
+        ")}
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
-    ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
-    ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
-    array_push(formdata, rowdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
+        ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
+        array_push(formdata, rowdata);
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Victory Res"");
-    ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
-    ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
-    array_push(formdata, rowdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
+        ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
+        array_push(formdata, rowdata);
 
-    var rowdata = ds_map_create();
-    ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
-    ds_map_add(rowdata, ""func_name"", ""diff_resettodefaults"");
-    array_push(formdata, rowdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Victory Res"");
+        ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
+        array_push(formdata, rowdata);
 
-    ds_map_add(menudata, ""form"", formdata);
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
+        ds_map_add(rowdata, ""func_name"", ""diff_resettodefaults"");
+        array_push(formdata, rowdata);
 
-    array_push(global.modmenu_data, menudata);
-");
+        ds_map_add(menudata, ""form"", formdata);
+
+        array_push(global.modmenu_data, menudata);
+    ");
+}
 
 string[] damageLikes = {"gml_GlobalScript_scr_damage"};
-if (ch_no >= 2)
+if (ch_no == 0)
+{
+    string[] demoDamageLikes = {"gml_GlobalScript_scr_damage_ch1"};
+    damageLikes = damageLikes.Concat(demoDamageLikes).ToArray();
+}
+if (ch_no >= 2 || ch_no == 0)
 {
     string[] ch2UpDamageLikes = {"gml_GlobalScript_scr_damage_proportional", "gml_GlobalScript_scr_damage_sneo_final_attack"};
     damageLikes = damageLikes.Concat(ch2UpDamageLikes).ToArray();
@@ -239,16 +285,24 @@ foreach (string scrName in damageLikes)
         if (global.charaction[hpi] == 10)
         ");
 }
+if (ch_no == 0)
+{
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_all_overworld_ch1", "hpdiff = tdamage;", @"
+        tdamage = ceil(tdamage * global.diff_damagemulti);
+        hpdiff = tdamage;
+        ");
+}
 importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage_all_overworld", "hpdiff = tdamage;", @"
     tdamage = ceil(tdamage * global.diff_damagemulti);
     hpdiff = tdamage;
     ");
-if (ch_no == 1)
+if (ch_no == 1 || ch_no == 0)
 {
-    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_laserscythe_Other_15", "global.hp[global.char[i]] = ceil(global.hp[global.char[i]] * 0.7);",
+    importGroup.QueueTrimmedLinesFindReplace(ch_no == 0 ? "gml_Object_obj_laserscythe_ch1_Other_15" : "gml_Object_obj_laserscythe_Other_15",
+        "global.hp[global.char[i]] = ceil(global.hp[global.char[i]] * 0.7);",
         "global.hp[global.char[i]] = ceil(global.hp[global.char[i]] * power(0.7, global.diff_damagemulti));");
 }
-if (ch_no == 2)
+if (ch_no == 2 || ch_no == 0)
 {
     importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "if (global.hp[1] <= 10)", "if (global.hp[1] <= round(10 * global.diff_damagemulti))");
     importGroup.QueueFindReplace("gml_Object_o_boxingcontroller_Collision_o_boxing_hitbox", "global.hp[1] -= 10;", "global.hp[1] -= round(10 * global.diff_damagemulti);");
@@ -276,7 +330,7 @@ if (ch_no == 4) {
     }
 }
 // Apply damage multiplier (Damage Over Time)
-if (ch_no >= 2)
+if (ch_no >= 2 || ch_no == 0)
 {
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_Step_0", "t_siner++;", "");
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_Step_0", "if (global.charweapon[4] == 13)", @"
@@ -291,7 +345,7 @@ if (ch_no >= 2)
 
         if (false)
     ");
-    string poisonScrName = ch_no == 2 ? "gml_Object_obj_heroparent_Draw_0" : "gml_Object_obj_heroparent_Step_0";
+    string poisonScrName = (ch_no == 2 || ch_no == 0) ? "gml_Object_obj_heroparent_Draw_0" : "gml_Object_obj_heroparent_Step_0";
     importGroup.QueueTrimmedLinesFindReplace(poisonScrName, "poisontimer++;", @"
         poisontimer++;
         poisondmgtimer += global.diff_damagemulti;
@@ -353,18 +407,44 @@ if (ch_no == 4) {
 }
 
 // Apply victory res - if VictoryRes is 0 then don't heal; additionally ensure the heal brings the character to at least 1 hp for low values of VictoryRes
+if (ch_no == 0)
+{
+    importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_ch1_Step_0", "global.maxhp[i] / 8", "global.diff_victoryres >= 0 ? max(1, global.maxhp[i] * global.diff_victoryres) : global.hp[i]");
+}
 importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.maxhp[i] / 8", "global.diff_victoryres >= 0 ? max(1, global.maxhp[i] * global.diff_victoryres) : global.hp[i]");
 
 // Downed Regen
+if (ch_no == 0)
+{
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_mnendturn_ch1", "healamt = ceil(global.maxhp[hptarget] / 8);", "healamt = ceil(global.maxhp[hptarget] * global.diff_downedregen);");
+}
 importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_mnendturn", "healamt = ceil(global.maxhp[hptarget] / 8);", "healamt = ceil(global.maxhp[hptarget] * global.diff_downedregen);");
 
 // Hit.All
 string[] singleHits = {"gml_Object_obj_overworldbulletparent_Other_15", "gml_Object_obj_collidebullet_Other_15", "gml_Object_obj_checkers_leap_Other_15"};
+if (ch_no == 0) {
+    string[] demoSingleHits = {"gml_Object_obj_regularbullet_permanent_ch1_Other_15", "gml_Object_obj_lancerbike_ch1_Other_15", "gml_Object_obj_lancerbike_neo_ch1_Other_15"};
+    foreach (string scrName in demoSingleHits)
+    {
+        importGroup.QueueTrimmedLinesFindReplace(scrName, "scr_damage_ch1();", @"
+            {
+                if (global.diff_hitall <= 0)
+                {
+                    scr_damage_ch1();
+                }
+                else
+                {
+                    scr_damage_all_ch1();
+                }
+            }
+        ");
+    }
+}
 if (ch_no == 1) {
     string[] ch1SingleHits = {"gml_Object_obj_regularbullet_permanent_Other_15", "gml_Object_obj_lancerbike_Other_15", "gml_Object_obj_lancerbike_neo_Other_15"};
     singleHits = singleHits.Concat(ch1SingleHits).ToArray();
 }
-if (ch_no == 2) {
+if (ch_no == 2 || ch_no == 0) {
     string[] ch2SingleHits = {"gml_Object_obj_mettaton_bomb_hitbox_Other_15", "gml_Object_obj_lancerbike_Other_15", "gml_Object_obj_baseenemy_Step_0", "gml_Object_obj_omawaroid_vaccine_Other_15",
         "gml_Object_obj_viro_needle_Other_15", "gml_Object_obj_yarnbullet_Other_15", "gml_Object_obj_tasque_soundwave_Other_15", "gml_Object_obj_tm_quizzap_Other_15",
         "gml_Object_obj_queen_social_media_Other_15", "gml_Object_obj_queen_wine_attack_droplet_Other_15", "gml_Object_obj_queen_wine_attack_bottom_hurtbox_Other_15",
@@ -412,7 +492,7 @@ foreach (string scrName in singleHits)
         }
     ");
 }
-if (ch_no == 2) {
+if (ch_no == 2 || ch_no == 0) {
     // TODO might be cleaner to add a scr_damage_all_proportional function
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_basicbullet_sneo_finale_Other_15", "if (target != 3)", @"
         if (target != 3 && global.diff_hitall > 0)
@@ -531,6 +611,10 @@ if (ch_no == 3) {
 
 // I-Frames
 string[] iFramers = {"gml_GlobalScript_scr_damage", "gml_GlobalScript_scr_damage_all", "gml_GlobalScript_scr_damage_all_overworld"};
+if (ch_no == 0) {
+    string[] demoIFramers = {"gml_GlobalScript_scr_damage_ch1", "gml_GlobalScript_scr_damage_all_ch1", "gml_GlobalScript_scr_damage_all_overworld_ch1", "gml_Object_obj_laserscythe_ch1_Other_15"};
+    iFramers = iFramers.Concat(demoIFramers).ToArray();
+}
 if (ch_no == 1) {
     string[] ch1IFramers = {"gml_Object_obj_laserscythe_Other_15"};
     iFramers = iFramers.Concat(ch1IFramers).ToArray();
@@ -567,6 +651,17 @@ foreach (string scrName in iFramers)
 }
 
 // Apply Battle Rewards
+if (ch_no == 0)
+{
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_ch1_Step_0", "global.xp += global.monsterexp[3];", @"
+        global.monsterexp[3] *= global.diff_battlerewards;
+        global.xp += global.monsterexp[3];
+    ");
+    importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_ch1_Step_0", "global.gold += global.monstergold[3];", @"
+        global.monstergold[3] *= global.diff_battlerewards;
+        global.gold += global.monstergold[3];
+    ");
+}
 importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_battlecontroller_Step_0", "global.xp += global.monsterexp[3];", @"
     global.monsterexp[3] *= global.diff_battlerewards;
     global.xp += global.monsterexp[3];
@@ -591,11 +686,14 @@ if (ch_no == 3) {
 
 // Apply TP Gain
 string[] tensionHeals = {"gml_Object_obj_grazebox_Collision_obj_collidebullet"};
-if (ch_no >= 1 && ch_no <= 2) {
+if (ch_no == 0) {
+    importGroup.QueueFindReplace("gml_Object_obj_heroparent_ch1_Alarm_1", "scr_tensionheal_ch1(", "scr_tensionheal_ch1(global.diff_tpgain * ");
+}
+if (ch_no >= 0 && ch_no <= 2) {
     string[] ch1to2TensionHeals = {"gml_Object_obj_heroparent_Alarm_1"};
     tensionHeals = tensionHeals.Concat(ch1to2TensionHeals).ToArray();
 }
-if (ch_no == 2) {
+if (ch_no == 2 || ch_no == 0) {
     string[] ch2TensionHeals = {"gml_Object_obj_sneo_lilguy_Collision_obj_yheart_shot", "gml_Object_obj_sneo_crusher_Collision_obj_yheart_shot",
         "gml_Object_obj_pipis_egg_bullet_Collision_obj_yheart_shot", "gml_Object_obj_pipis_egg_bullet_Collision_obj_mettaton_bomb_hitbox", "gml_Object_obj_rouxls_enemy_Create_0",
         "gml_Object_o_boxingcontroller_Step_0", "gml_Object_o_boxinggraze_Alarm_0"};
@@ -621,6 +719,10 @@ foreach (string scrName in tensionHeals)
 // avoid tp heal items
 if (ch_no == 4) {
     importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "scr_tensionheal(5", "scr_tensionheal(global.diff_tpgain * 5");
+}
+if (ch_no == 0)
+{
+    importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_ch1_Step_0", "scr_tensionheal_ch1(40", "scr_tensionheal_ch1(global.diff_tpgain * 40");
 }
 importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "scr_tensionheal(40", "scr_tensionheal(global.diff_tpgain * 40");
 
