@@ -599,6 +599,7 @@ if (ch_no == 4) {
         "if (global.diff_hitall <= 0 && global.chapter == 4 && i_ex(obj_titan_enemy) && obj_titan_enemy.forcehitralsei)");
     importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.chapter == 4 && i_ex(obj_sound_of_justice_enemy) && obj_sound_of_justice_enemy.phase == 2)",
         "if (global.diff_hitall <= 0 && global.chapter == 4 && i_ex(obj_sound_of_justice_enemy) && obj_sound_of_justice_enemy.phase == 2)");
+    importGroup.QueueTrimmedLinesFindReplace("gml_GlobalScript_scr_damage", "if (global.hp[1] < 1)", "if (global.diff_hitall <= 0 && global.hp[1] < 1)");
 }
 // Disable these weird down exceptions if hit.all=on
 if (ch_no == 3) {
