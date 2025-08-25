@@ -4,7 +4,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 <img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.3.0)**
+**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.3.1)**
 
 ## What you can change
 - **Damage Multi** — multiply all incoming damage by this value
@@ -107,6 +107,29 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 
 </details>
 
+### Linux w\ Proton
+
+**Quick start**
+
+1. Download and unzip the release.
+2. Double-click `install-linux-proton.sh`.
+
+**Installer does**
+
+* Detects your DELTARUNE install (prompts if needed)
+* Downloads UndertaleModTool CLI if missing
+* Backs up to `ModBackups/<timestamp>`
+* Patches all chapters; safe to re-run
+
+<details>
+  <summary><strong>Command line</strong></summary>
+
+```bash
+./install-linux-proton.sh
+```
+
+</details>
+
 ## Advanced
 
 <details>
@@ -137,6 +160,22 @@ Example:
 
 ```bash
 ./install-macos.command --no-backup --app /Applications/DELTARUNE.app
+```
+
+</details>
+
+<details>
+  <summary><strong>Linux w\ Proton script flags</strong> (<code>install-linux-proton.sh</code>)</summary>
+
+* `--uninstall` — restore from most recent backup
+* `--no-backup` — skip creating backups
+* `--game-dir <path>` — set DELTARUNE folder path
+* `--utmt <path>` — path to UndertaleModCli
+
+Example:
+
+```bash
+./install-linux-proton.sh --no-backup --game-dir /Games/DELTARUNE
 ```
 
 </details>
@@ -174,6 +213,20 @@ UndertaleModCli.exe load "chapter4_windows\data.win" --scripts "src\customdiffic
 ./UndertaleModCli load chapter2_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter2_mac/game.ios
 ./UndertaleModCli load chapter3_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter3_mac/game.ios
 ./UndertaleModCli load chapter4_mac/game.ios --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter4_mac/game.ios
+```
+
+**Linux w\ Proton**
+
+```bash
+./UndertaleModCli load chapter1_windows/data.win --scripts src/modmenu_ch1to4.csx --verbose false --output chapter1_windows/data.win
+./UndertaleModCli load chapter2_windows/data.win --scripts src/modmenu_ch1to4.csx --verbose false --output chapter2_windows/data.win
+./UndertaleModCli load chapter3_windows/data.win --scripts src/modmenu_ch1to4.csx --verbose false --output chapter3_windows/data.win
+./UndertaleModCli load chapter4_windows/data.win --scripts src/modmenu_ch1to4.csx --verbose false --output chapter4_windows/data.win
+
+./UndertaleModCli load chapter1_windows/data.win --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter1_windows/data.win
+./UndertaleModCli load chapter2_windows/data.win --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter2_windows/data.win
+./UndertaleModCli load chapter3_windows/data.win --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter3_windows/data.win
+./UndertaleModCli load chapter4_windows/data.win --scripts src/customdifficulty_ch1to4.csx --verbose false --output chapter4_windows/data.win
 ```
 
 **Notes**
