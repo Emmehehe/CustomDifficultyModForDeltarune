@@ -17,7 +17,7 @@ mkdir -p "$CACHE_DIR"
 
 UNINSTALL=0
 NO_BACKUP=0
-APP_PATH=""
+GAME_DIR=""
 UTMT_CLI=""
 
 # --- parse args ---
@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --uninstall) UNINSTALL=1; shift;;
     --no-backup) NO_BACKUP=1; shift;;
-    --game-dir) APP_PATH="${2:-}"; shift 2;;
+    --game-dir) GAME_DIR="${2:-}"; shift 2;;
     --utmt) UTMT_CLI="${2:-}"; shift 2;;
     *) echo "Unknown argument: $1"; exit 1;;
   esac
@@ -87,31 +87,31 @@ find_utmt_cli() {
 }
 
 # --- helper: pick or detect game dir ---
-pick_app_if_needed() {
-  if [[ -n "$APP_PATH" ]]; then return; fi
+detect_game_dir_if_needed() {
+  if [[ -n "$GAME_DIR" ]]; then return; fi
 
   # Try common Steam location first
-  DEFAULT_APP="$HOME/.steam/steam/SteamApps/common/DELTARUNE"
-  if [[ -d "$DEFAULT_APP" ]]; then APP_PATH="$DEFAULT_APP"; fi
+  DEFAULT_GAME_DIR="$HOME/.steam/steam/SteamApps/common/DELTARUNE"
+  if [[ -d "$DEFAULT_GAME_DIR" ]]; then GAME_DIR="$DEFAULT_GAME_DIR"; fi
 
   # If no game found, try to find demo
-  if [[ -z "$APP_PATH" ]]; then
-    DEFAULT_DEMO_APP="$HOME/.steam/steam/SteamApps/common/DELTARUNEdemo"
-    if [[ -d "$DEFAULT_DEMO_APP" ]]; then APP_PATH="$DEFAULT_DEMO_APP"; fi
+  if [[ -z "$GAME_DIR" ]]; then
+    DEFAULT_DEMO_GAME_DIR="$HOME/.steam/steam/SteamApps/common/DELTARUNEdemo"
+    if [[ -d "$DEFAULT_DEMO_GAME_DIR" ]]; then GAME_DIR="$DEFAULT_DEMO_GAME_DIR"; fi
   fi
 
   # Ask user to confirm or pick
-  if [[ -n "$APP_PATH" ]]; then
-    echo "Detected: $APP_PATH"
+  if [[ -n "$GAME_DIR" ]]; then
+    echo "Detected: $GAME_DIR"
     read -r -p "Use this path? [Y/n] " resp
-    if [[ "${resp:-Y}" =~ ^(n|N)$ ]]; then APP_PATH=""; fi
+    if [[ "${resp:-Y}" =~ ^(n|N)$ ]]; then GAME_DIR=""; fi
   fi
 
-  if [[ -z "$APP_PATH" ]]; then
-    read -r -p "Enter full path to DELTARUNE folder: " APP_PATH
+  if [[ -z "$GAME_DIR" ]]; then
+    read -r -p "Enter full path to DELTARUNE folder: " GAME_DIR
   fi
 
-  [[ -d "$APP_PATH" ]] || err "Path not found: $APP_PATH"
+  [[ -d "$GAME_DIR" ]] || err "Path not found: $GAME_DIR"
 }
 
 # --- helper: list chapter files ---
@@ -135,8 +135,8 @@ find_chapter_files() {
 UTMT_CLI=$(find_utmt_cli)
 log "Using UndertaleModCli: $UTMT_CLI"
 
-pick_app_if_needed
-RESOURCES="$APP_PATH"
+detect_game_dir_if_needed
+RESOURCES="$GAME_DIR"
 [[ -d "$RESOURCES" ]] || err "Resources folder not found: $RESOURCES"
 
 # Gather targets
