@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# === Simple installer for CustomDifficultyModForDeltarune (Linux) ===
+# === Simple installer for CustomDifficultyModForDeltarune (Linux w\ Proton) ===
 # Usage:
 #   Double‑click in your file explorer (or: chmod +x install-linux.sh && ./install-linux.sh)
 #   Optional flags: --uninstall         Restore from most recent backup
