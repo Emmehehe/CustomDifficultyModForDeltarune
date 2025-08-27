@@ -119,13 +119,13 @@ find_chapter_files() {
   local RES="$1"
   local files=()
   for ch in 1 2 3 4; do
-    local f="$RES/chapter${ch}_windows/game.win"
+    local f="$RES/chapter${ch}_windows/data.win"
     [[ -f "$f" ]] && files+=("$f")
   done
   # If no chapter files found, assume this is the demo
   if (( ${#files[@]} == 0 )); then
     log "No chapter files found, attempting install for demo. "
-    local f="$RES/game.win"
+    local f="$RES/data.win"
     [[ -f "$f" ]] && files+=("$f")
   fi
   printf '%s\n' "${files[@]:-}"
