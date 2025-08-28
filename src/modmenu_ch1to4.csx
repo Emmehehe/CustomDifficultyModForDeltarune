@@ -361,16 +361,26 @@ foreach (string darkcon in darkcons)
 
                     for (var j = 0; j < array_length(ranges); j++) {{
                         var range = ranges[j];
-                        if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
-                                valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
+                        if (string_pos(""~"", range)) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convVal = isPercent ? value * 100 : value;
+                            if (convVal <= minMax[1] || j+1 == array_length(ranges)) {{
+                                valueString = string_trim(string_format(convVal, 3, (isPercent && convVal > -20 && convVal < 20) ? 1 : 0) + (isPercent ? ""%"" : """"));
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(range, ""="");
-                            if (value == real(labelValue[1]) || j+1 == array_length(ranges)) {{
+                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (value == (real(labelValue[1]) * convBack) || j+1 == array_length(ranges)) {{
                                 valueString = labelValue[0];
+                                break;
+                            }}
+                        }} else if (string_ends_with(range, ""%"")) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                            if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
+                                valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
                                 break;
                             }}
                         }}
@@ -523,7 +533,7 @@ foreach (string darkcon in darkcons)
 
                         for (var i = 0; i < array_length(ranges); i++) {{
                             var range = ranges[i];
-                            if (string_ends_with(range, ""%"")) {{
+                            if (!string_pos(""="", range)) {{
                                 isAllLabels = false;
                                 break;
                             }}
@@ -586,7 +596,15 @@ foreach (string darkcon in darkcons)
 
                 if (right_h())
                 {{
-                    if (value < 0.2)
+                    if (value <= -2)
+                        value += 0.1;
+                    else if (value <= -1)
+                        value += 0.05;
+                    else if (value <= -0.5)
+                        value += 0.02;
+                    else if (value <= -0.2)
+                        value += 0.01;
+                    else if (value < 0.2)
                         value += 0.005;
                     else if (value < 0.5)
                         value += 0.01;
@@ -599,16 +617,29 @@ foreach (string darkcon in darkcons)
 
                     for (var i = 0; i < array_length(ranges); i++) {{
                         var range = ranges[i];
-                        if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 <= minMax[1] || i+1 == array_length(ranges)) {{
-                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
+                        if (string_pos(""~"", range)) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                            var isPercent = string_ends_with(range, ""%"");
+                            if (!isPercent)
+                                value = ceil(value);
+                            var convVal = isPercent ? value * 100 : value;
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (convVal <= minMax[1] || i+1 == array_length(ranges)) {{
+                                value = clamp(value, minMax[0] * convBack, minMax[1] * convBack);
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(range, ""="");
-                            if (value <= real(labelValue[1]) || i+1 == array_length(ranges)) {{
-                                value = real(labelValue[1]);
+                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (value <= (real(labelValue[1]) * convBack) || i+1 == array_length(ranges)) {{
+                                value = real(labelValue[1]) * convBack;
+                                break;
+                            }}
+                        }} else if (string_ends_with(range, ""%"")) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                            if (value * 100 <= minMax[1] || i+1 == array_length(ranges)) {{
+                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
                                 break;
                             }}
                         }}
@@ -619,7 +650,15 @@ foreach (string darkcon in darkcons)
 
                 if (left_h())
                 {{
-                    if (value <= 0.2)
+                    if (value < -2)
+                        value -= 0.1;
+                    else if (value < -1)
+                        value -= 0.05;
+                    else if (value < -0.5)
+                        value -= 0.02;
+                    else if (value < -0.2)
+                        value -= 0.01;
+                    else if (value <= 0.2)
                         value -= 0.005;
                     else if (value <= 0.5)
                         value -= 0.01;
@@ -632,16 +671,29 @@ foreach (string darkcon in darkcons)
 
                     for (var i = array_length(ranges) - 1; i >= 0; i--) {{
                         var range = ranges[i];
-                        if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 >= minMax[0] || i == 0) {{
-                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
+                        if (string_pos(""~"", range)) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                            var isPercent = string_ends_with(range, ""%"");
+                            if (!isPercent)
+                                value = floor(value);
+                            var convVal = isPercent ? value * 100 : value;
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (convVal >= minMax[0] || i == 0) {{
+                                value = clamp(value, minMax[0] * convBack, minMax[1] * convBack);
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(range, ""="");
-                            if (value >= real(labelValue[1]) || i == 0) {{
-                                value = real(labelValue[1]);
+                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (value >= (real(labelValue[1]) * convBack) || i == 0) {{
+                                value = real(labelValue[1]) * convBack;
+                                break;
+                            }}
+                        }} else if (string_ends_with(range, ""%"")) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                            if (value * 100 >= minMax[0] || i == 0) {{
+                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
                                 break;
                             }}
                         }}
