@@ -70,6 +70,7 @@ foreach (string scrName in gamestartLikes)
                 global.diff_downdeficit = 1 / 2;
                 global.diff_downedregen = 1 / 8;
                 global.diff_victoryres = 1 / 8;
+                global.diff_enemycd = 1;
             }}
 
             global.diff_resettodefaults();
@@ -119,6 +120,7 @@ foreach (string scrName in loadLikes)
         global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", 1 / 2);
         global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
         global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
+        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", 1);
         ossafe_ini_close();
 
         ");
@@ -151,6 +153,7 @@ foreach (string scrName in saveLikes)
         ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
         ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
         ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
+        ini_write_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", global.diff_enemycd);
         ossafe_ini_close();
         ");
 }
@@ -236,6 +239,12 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""title_en"", ""Victory Res"");
         ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
         ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
+        array_push(formdata, rowdata);
+
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Enemy Cooldowns"");
+        ds_map_add(rowdata, ""value_range_en"", ""0-200%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
@@ -726,6 +735,10 @@ if (ch_no == 0)
     importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_ch1_Step_0", "scr_tensionheal_ch1(40", "scr_tensionheal_ch1(global.diff_tpgain * 40");
 }
 importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "scr_tensionheal(40", "scr_tensionheal(global.diff_tpgain * 40");
+
+// Enemy Cooldowns
+// TODO btimer
+// TODO global.diff_enemycd
 
 // Finish edit
 importGroup.Import();
