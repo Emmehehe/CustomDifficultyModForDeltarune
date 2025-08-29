@@ -176,7 +176,7 @@ foreach (string darkcon in darkcons)
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
-        ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INF=2147483647"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~1000%;INF=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
         array_push(formdata, rowdata);
 
@@ -196,19 +196,19 @@ foreach (string darkcon in darkcons)
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""I-Frames"");
-        ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""TP Gain"");
-        ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
-        ds_map_add(rowdata, ""value_range_en"", ""0-1000%"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
         array_push(formdata, rowdata);
 
@@ -222,19 +222,19 @@ foreach (string darkcon in darkcons)
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
-        ds_map_add(rowdata, ""value_range_en"", ""0-1000%;[-999]=2147483647"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~1000%;[-999]=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
-        ds_map_add(rowdata, ""value_range_en"", ""0-1000%;INSTANT=2147483647"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~1000%;INSTANT=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Victory Res"");
-        ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0-100%"");
+        ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0~100%"");
         ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
         array_push(formdata, rowdata);
 

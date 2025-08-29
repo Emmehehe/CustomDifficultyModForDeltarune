@@ -198,6 +198,7 @@ if (ch_no == 0) {
             {
                 length = string_length(arg0);
                 result = """";
+                var foundNonWS = false;
 
                 // string_char_at index starts at 1 for some reason
                 for (i = 1; i <= length; i++)
@@ -205,11 +206,15 @@ if (ch_no == 0) {
                     thischar = string_char_at(arg0, i);
 
                     if (thischar != "" "") {
+                        foundNonWS = true;
+                    }
+
+                    if (foundNonWS) {
                         result += thischar;
                     }
                 }
 
-                return arg0;
+                return result;
             }
 
         ";
@@ -231,6 +236,13 @@ foreach (string darkcon in darkcons)
         global.modsubmenuscroll = 0;
         global.modmenu_data = array_create(0);
         surf_modtitles = -1;
+
+        // Apply acceleration to the scrollers so that they're not too fidly but not too slow
+        modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
+        modscroller_speed_min = 0;
+        modscroller_speed_max = 10;
+        modscroller_speed = modscroller_speed_min;
+        modscroller_accel = 1 / 20;
 
         // some translation mods replace the english translation rather than using DR's built in localisation support, so can't always rely on global.lang and have to override for certain mods
         global.modmenu_langoverride = """";
@@ -323,8 +335,12 @@ foreach (string darkcon in darkcons)
             }}
 
             // form buttons
-            var _xPos = ({global_lang} != ""ja"") ? (xx + 170) : (xx + 150);
-            var _heartXPos = ({global_lang} != ""ja"") ? (xx + 145) : (xx + 125);
+            var left_margin = {ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""left_margin""")};
+            if (is_undefined(left_margin))
+                left_margin = 40;
+            var _xPos = xx + 130 + left_margin;
+            var _heartXPos = xx + 105 + left_margin;
+
             var _selectXPos = ({global_lang} == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
 
             draw_set_color(c_white);
@@ -361,16 +377,26 @@ foreach (string darkcon in darkcons)
 
                     for (var j = 0; j < array_length(ranges); j++) {{
                         var range = ranges[j];
-                        if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
-                                valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
+                        if (string_pos(""~"", range)) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convVal = isPercent ? value * 100 : value;
+                            if (convVal <= minMax[1] || j+1 == array_length(ranges)) {{
+                                valueString = string_trim(string_format(convVal, 3, (isPercent && convVal > -20 && convVal < 20) ? 1 : 0) + (isPercent ? ""%"" : """"));
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(range, ""="");
-                            if (value == real(labelValue[1]) || j+1 == array_length(ranges)) {{
+                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (value == (real(labelValue[1]) * convBack) || j+1 == array_length(ranges)) {{
                                 valueString = labelValue[0];
+                                break;
+                            }}
+                        }} else if (string_ends_with(range, ""%"")) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                            if (value * 100 <= minMax[1] || j+1 == array_length(ranges)) {{
+                                valueString = string_trim(string_format(value * 100, 3, value < 0.2 ? 1 : 0) + ""%"");
                                 break;
                             }}
                         }}
@@ -523,7 +549,7 @@ foreach (string darkcon in darkcons)
 
                         for (var i = 0; i < array_length(ranges); i++) {{
                             var range = ranges[i];
-                            if (string_ends_with(range, ""%"")) {{
+                            if (!string_pos(""="", range)) {{
                                 isAllLabels = false;
                                 break;
                             }}
@@ -584,70 +610,135 @@ foreach (string darkcon in darkcons)
                 var value_name = ds_map_find_value(row_data, ""value_name"");
                 var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
 
-                if (right_h())
+                if (right_h() && modscroller_step >= 1)
                 {{
-                    if (value < 0.2)
-                        value += 0.005;
+                    var value_adjust = 0;
+                    if (value <= -2)
+                        value_adjust += 0.1;
+                    else if (value <= -1)
+                        value_adjust += 0.05;
+                    else if (value <= -0.5)
+                        value_adjust += 0.02;
+                    else if (value <= -0.2)
+                        value_adjust += 0.01;
+                    else if (value < 0.2)
+                        value_adjust += 0.005;
                     else if (value < 0.5)
-                        value += 0.01;
+                        value_adjust += 0.01;
                     else if (value < 1)
-                        value += 0.02;
+                        value_adjust += 0.02;
                     else if (value < 2)
-                        value += 0.05;
+                        value_adjust += 0.05;
                     else
-                        value += 0.1;
+                        value_adjust += 0.1;
+
+                    value_adjust *= modscroller_step div 1;
+                    value += value_adjust;
 
                     for (var i = 0; i < array_length(ranges); i++) {{
                         var range = ranges[i];
-                        if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 <= minMax[1] || i+1 == array_length(ranges)) {{
-                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
+                        if (string_pos(""~"", range)) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                            var isPercent = string_ends_with(range, ""%"");
+                            if (!isPercent)
+                                value = ceil(value);
+                            var convVal = isPercent ? value * 100 : value;
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (convVal <= real(minMax[1]) || i+1 == array_length(ranges)) {{
+                                value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(range, ""="");
-                            if (value <= real(labelValue[1]) || i+1 == array_length(ranges)) {{
-                                value = real(labelValue[1]);
+                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (value <= (real(labelValue[1]) * convBack) || i+1 == array_length(ranges)) {{
+                                value = real(labelValue[1]) * convBack;
+                                break;
+                            }}
+                        }} else if (string_ends_with(range, ""%"")) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                            if (value * 100 <= real(minMax[1]) || i+1 == array_length(ranges)) {{
+                                value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
                                 break;
                             }}
                         }}
                     }}
 
                     variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                    modscroller_step = modscroller_step % 1;
                 }}
 
-                if (left_h())
+                if (left_h() && modscroller_step >= 1)
                 {{
-                    if (value <= 0.2)
-                        value -= 0.005;
+                    var value_adjust = 0;
+                    if (value < -2)
+                        value_adjust -= 0.1;
+                    else if (value < -1)
+                        value_adjust -= 0.05;
+                    else if (value < -0.5)
+                        value_adjust -= 0.02;
+                    else if (value < -0.2)
+                        value_adjust -= 0.01;
+                    else if (value <= 0.2)
+                        value_adjust -= 0.005;
                     else if (value <= 0.5)
-                        value -= 0.01;
+                        value_adjust -= 0.01;
                     else if (value <= 1)
-                        value -= 0.02;
+                        value_adjust -= 0.02;
                     else if (value <= 2)
-                        value -= 0.05;
+                        value_adjust -= 0.05;
                     else
-                        value -= 0.1;
+                        value_adjust -= 0.1;
+
+                    value_adjust *= modscroller_step div 1;
+                    value += value_adjust;
 
                     for (var i = array_length(ranges) - 1; i >= 0; i--) {{
                         var range = ranges[i];
-                        if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 >= minMax[0] || i == 0) {{
-                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
+                        if (string_pos(""~"", range)) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                            var isPercent = string_ends_with(range, ""%"");
+                            if (!isPercent)
+                                value = floor(value);
+                            var convVal = isPercent ? value * 100 : value;
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (convVal >= real(minMax[0]) || i == 0) {{
+                                value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(range, ""="");
-                            if (value >= real(labelValue[1]) || i == 0) {{
-                                value = real(labelValue[1]);
+                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                            var isPercent = string_ends_with(range, ""%"");
+                            var convBack = isPercent ? 1 / 100 : 1;
+                            if (value >= (real(labelValue[1]) * convBack) || i == 0) {{
+                                value = real(labelValue[1]) * convBack;
+                                break;
+                            }}
+                        }} else if (string_ends_with(range, ""%"")) {{
+                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                            if (value * 100 >= real(minMax[0]) || i == 0) {{
+                                value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
                                 break;
                             }}
                         }}
                     }}
 
                     variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                    modscroller_step = modscroller_step % 1;
+                }}
+
+                if (right_h() || left_h())
+                {{
+                    modscroller_step += modscroller_speed;
+                    modscroller_speed = clamp(modscroller_speed + modscroller_accel, modscroller_speed_min, modscroller_speed_max);
+                }}
+                else
+                {{
+                    modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
+                    modscroller_speed = modscroller_speed_min;
                 }}
 
                 se_select = 0;
@@ -671,6 +762,9 @@ foreach (string darkcon in darkcons)
                         var functocall = variable_instance_get(global, func_name);
                         functocall();
                     }}
+
+                    modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
+                    modscroller_speed = modscroller_speed_min;
                 }}
             }}
         }}
