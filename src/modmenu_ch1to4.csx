@@ -237,6 +237,13 @@ foreach (string darkcon in darkcons)
         global.modmenu_data = array_create(0);
         surf_modtitles = -1;
 
+        // Apply acceleration to the scrollers so that they're not too fidly but not too slow
+        modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
+        modscroller_speed_min = 0.1;
+        modscroller_speed_max = 10;
+        modscroller_speed = modscroller_speed_min;
+        modscroller_accel = 1 / 45;
+
         // some translation mods replace the english translation rather than using DR's built in localisation support, so can't always rely on global.lang and have to override for certain mods
         global.modmenu_langoverride = """";
     ");
@@ -605,26 +612,30 @@ foreach (string darkcon in darkcons)
                 var value_name = ds_map_find_value(row_data, ""value_name"");
                 var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
 
-                if (right_h())
+                if (right_h() && modscroller_step >= 1)
                 {{
+                    var value_adjust = 0;
                     if (value <= -2)
-                        value += 0.1;
+                        value_adjust += 0.1;
                     else if (value <= -1)
-                        value += 0.05;
+                        value_adjust += 0.05;
                     else if (value <= -0.5)
-                        value += 0.02;
+                        value_adjust += 0.02;
                     else if (value <= -0.2)
-                        value += 0.01;
+                        value_adjust += 0.01;
                     else if (value < 0.2)
-                        value += 0.005;
+                        value_adjust += 0.005;
                     else if (value < 0.5)
-                        value += 0.01;
+                        value_adjust += 0.01;
                     else if (value < 1)
-                        value += 0.02;
+                        value_adjust += 0.02;
                     else if (value < 2)
-                        value += 0.05;
+                        value_adjust += 0.05;
                     else
-                        value += 0.1;
+                        value_adjust += 0.1;
+
+                    value_adjust *= modscroller_step div 1;
+                    value += value_adjust;
 
                     for (var i = 0; i < array_length(ranges); i++) {{
                         var range = ranges[i];
@@ -657,28 +668,34 @@ foreach (string darkcon in darkcons)
                     }}
 
                     variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                    modscroller_step = modscroller_step % 1;
                 }}
 
-                if (left_h())
+                if (left_h() && modscroller_step >= 1)
                 {{
+                    var value_adjust = 0;
                     if (value < -2)
-                        value -= 0.1;
+                        value_adjust -= 0.1;
                     else if (value < -1)
-                        value -= 0.05;
+                        value_adjust -= 0.05;
                     else if (value < -0.5)
-                        value -= 0.02;
+                        value_adjust -= 0.02;
                     else if (value < -0.2)
-                        value -= 0.01;
+                        value_adjust -= 0.01;
                     else if (value <= 0.2)
-                        value -= 0.005;
+                        value_adjust -= 0.005;
                     else if (value <= 0.5)
-                        value -= 0.01;
+                        value_adjust -= 0.01;
                     else if (value <= 1)
-                        value -= 0.02;
+                        value_adjust -= 0.02;
                     else if (value <= 2)
-                        value -= 0.05;
+                        value_adjust -= 0.05;
                     else
-                        value -= 0.1;
+                        value_adjust -= 0.1;
+
+                    value_adjust *= modscroller_step div 1;
+                    value += value_adjust;
 
                     for (var i = array_length(ranges) - 1; i >= 0; i--) {{
                         var range = ranges[i];
@@ -711,6 +728,19 @@ foreach (string darkcon in darkcons)
                     }}
 
                     variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                    modscroller_step = modscroller_step % 1;
+                }}
+
+                if (right_h() || left_h())
+                {{
+                    modscroller_step += modscroller_speed;
+                    modscroller_speed = clamp(modscroller_speed + modscroller_accel, modscroller_speed_min, modscroller_speed_max);
+                }}
+                else
+                {{
+                    modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
+                    modscroller_speed = modscroller_speed_min;
                 }}
 
                 se_select = 0;
@@ -734,6 +764,9 @@ foreach (string darkcon in darkcons)
                         var functocall = variable_instance_get(global, func_name);
                         functocall();
                     }}
+
+                    modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
+                    modscroller_speed = modscroller_speed_min;
                 }}
             }}
         }}
