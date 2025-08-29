@@ -4,7 +4,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 <img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.3.1)**
+**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.3.2)**
 
 ## What you can change
 - **Damage Multi** — multiply all incoming damage by this value
@@ -13,6 +13,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
   - For any damage over time effects, either tick faster, apply more damage, or combination of both - where appropriate - proportionate with the multiplier that has been set.
 
 - **Hit.All** — when switched on, hits that target a single character instead hits the entire party
+  - Additionally, attacks that adjust their damage for certain characters, no longer do so.
   - For no-hit runs, combine this setting with `Damage Multi=INF`.
 - **I-Frames** — multiply the number of i-frames received after damage by this value
 - **TP Gain** — multiply TP gain from all sources (except item use) by this value

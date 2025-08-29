@@ -4,7 +4,8 @@
         "version": "1.2.0",
         "description": "Modmenu for DELTARUNE. Framework for mods to add option menus.",
         "author": ["Emmahaha"],
-        "demoMod": false
+        "demoMod": false,
+        "packageID": "com.emmahaha.modmenu"
     },
     "neededFiles": [
         {

@@ -48,10 +48,11 @@ array_push(global.modmenu_data, menudata);
 ## Config Explained
 
 - title_en — English title for the mod's menu.
+- left_margin_en (optional, default: 40) — Adjusts the menu's left side margin. Useful if you're having trouble fitting text in the box.
 - form — Array containing rows for controls and buttons.
   - title_en — English title for the control/button.
   - value_range_en (optional) — English value range string for the control.
-    - Simple examples: `"0-100%"`, `"OFF=0;ON=1"`, `"OFF=-1;0-100%"`.
+    - Simple examples: `"0~100%"`, `"OFF=0;ON=1"`, `"OFF=-1;0~100%"`.
     - See [Value Ranges](#Value-Ranges) for a more detailed explaination.
   - value_name (required if value_range_en is set) — Name of the global variable this control should adjust.
     - e.g. Set to `"coolmod_funvalue"` for variable `global.coolmod_funvalue`.
@@ -64,17 +65,21 @@ array_push(global.modmenu_data, menudata);
 Value range strings allow you to define how a control behaves when the user interacts with it.
 
 Types of value range:
- - Label: `<label name>=<value>` — Sets the variable to the given decimal value, the user sees the label name.
- - Percentage: `<min>-<max>%` — Sets the variable between a range of decimal values, the user sees a percentage. Inclusive.
+ - Label: `<label name>=<value>` — Sets the variable to the given decimal value, the user sees the label name. The value can optionally be expressed as a percentage value.
+ - MinMax: `<min>~<max>` — Sets the variable between a range of integer values. Inclusive.
+ - MinMax(%): `<min>~<max>%` — Sets the variable between a range of decimal values, the user sees a percentage. Inclusive.
 
 Multiple ranges can be combined using `;`. Ranges MUST be defined in order. e.g. `"OFF=0;ON=1"` is valid, but `"ON=1;OFF=0"` is invalid.
 
 **Example range strings:**
- - `"0-100%"` — User can slide the value between 0% to 100%, the value is set between 0 and 1.
- - `"0-200%"` — User can slide the value between 0% to 200%, the value is set between 0 and 2.
+ - `"0~10"` — User can slide the value between 0 to 10, the value is set between 0 and 10.
+ - `"0~100%"` — User can slide the value between 0% to 100%, the value is set between 0 and 1.
+ - `"0~200%"` — User can slide the value between 0% to 200%, the value is set between 0 and 2.
+ - `"-100~100%"` — User can slide the value between -100% to 100%, the value is set between -1 and 1.
  - `"OFF=0;ON=1"` — User can toggle between 'OFF' and 'ON', the value is set to either 0 (off) or 1 (on).
  - `"RED=16711680;GREEN=65280;BLUE=255"` — User can toggle through 'RED', 'GREEN', and 'BLUE', the value is set appropriately.
- - `"OFF=-1;0-1000%"` — User can slide the value between 0% to 1000%, the value is set between 0 and 10. Additionally, if the user slides the value below 0%, they can set the option to 'OFF', aka -1.
+ - `"SMALL=50%;MEDIUM=100%;LARGE=200%"` — User can toggle through 'SMALL'(0.5), 'MEDIUM'(1), and 'LARGE'(2), the percentage value is set appropriately.
+ - `"OFF=-1;0~1000%"` — User can slide the value between 0% to 1000%, the value is set between 0 and 10. Additionally, if the user slides the value below 0%, they can set the option to 'OFF', aka -1.
 
 ## Localisation
 The mod menu supports localisation by reading the `global.lang` variable that comes with Deltarune, and looking up attributes that are postfixed with that lang string.
