@@ -13,6 +13,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
   - For any damage over time effects, either tick faster, apply more damage, or combination of both - where appropriate - proportionate with the multiplier that has been set.
 
 - **Hit.All** — when switched on, hits that target a single character instead hits the entire party
+  - Additionally, attacks that adjust their damage for certain characters, no longer do so.
   - For no-hit runs, combine this setting with `Damage Multi=INF`.
 - **I-Frames** — multiply the number of i-frames received after damage by this value
 - **TP Gain** — multiply TP gain from all sources (except item use) by this value
