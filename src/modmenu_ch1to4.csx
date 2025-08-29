@@ -239,10 +239,10 @@ foreach (string darkcon in darkcons)
 
         // Apply acceleration to the scrollers so that they're not too fidly but not too slow
         modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
-        modscroller_speed_min = 0.1;
+        modscroller_speed_min = 0;
         modscroller_speed_max = 10;
         modscroller_speed = modscroller_speed_min;
-        modscroller_accel = 1 / 30;
+        modscroller_accel = 1 / 20;
 
         // some translation mods replace the english translation rather than using DR's built in localisation support, so can't always rely on global.lang and have to override for certain mods
         global.modmenu_langoverride = """";
