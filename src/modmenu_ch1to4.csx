@@ -242,7 +242,7 @@ foreach (string darkcon in darkcons)
         modscroller_speed_min = 0.1;
         modscroller_speed_max = 10;
         modscroller_speed = modscroller_speed_min;
-        modscroller_accel = 1 / 45;
+        modscroller_accel = 1 / 30;
 
         // some translation mods replace the english translation rather than using DR's built in localisation support, so can't always rely on global.lang and have to override for certain mods
         global.modmenu_langoverride = """";
@@ -335,14 +335,12 @@ foreach (string darkcon in darkcons)
             }}
 
             // form buttons
-            var lessMargin = ds_map_exists(global.modmenu_data[global.modmenuno], ""reduce_margin"") ? ds_map_find_value(global.modmenu_data[global.modmenuno], ""reduce_margin"") : false;
-            var _xPos = ({global_lang} != ""ja"" && !lessMargin) ? (xx + 170) : (xx + 150);
-            var _heartXPos = ({global_lang} != ""ja"" && !lessMargin) ? (xx + 145) : (xx + 125);
-            if (lessMargin)
-            {{
-                _xPos -= 20;
-                _heartXPos -= 20;
-            }}
+            var left_margin = {ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""left_margin""")};
+            if (is_undefined(left_margin))
+                left_margin = 40;
+            var _xPos = xx + 130 + left_margin;
+            var _heartXPos = xx + 105 + left_margin;
+
             var _selectXPos = ({global_lang} == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
 
             draw_set_color(c_white);
