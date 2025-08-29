@@ -198,6 +198,7 @@ if (ch_no == 0) {
             {
                 length = string_length(arg0);
                 result = """";
+                var foundNonWS = false;
 
                 // string_char_at index starts at 1 for some reason
                 for (i = 1; i <= length; i++)
@@ -205,11 +206,15 @@ if (ch_no == 0) {
                     thischar = string_char_at(arg0, i);
 
                     if (thischar != "" "") {
+                        foundNonWS = true;
+                    }
+
+                    if (foundNonWS) {
                         result += thischar;
                     }
                 }
 
-                return arg0;
+                return result;
             }
 
         ";
@@ -323,8 +328,14 @@ foreach (string darkcon in darkcons)
             }}
 
             // form buttons
-            var _xPos = ({global_lang} != ""ja"") ? (xx + 170) : (xx + 150);
-            var _heartXPos = ({global_lang} != ""ja"") ? (xx + 145) : (xx + 125);
+            var lessMargin = ds_map_exists(global.modmenu_data[global.modmenuno], ""reduce_margin"") ? ds_map_find_value(global.modmenu_data[global.modmenuno], ""reduce_margin"") : false;
+            var _xPos = ({global_lang} != ""ja"" && !lessMargin) ? (xx + 170) : (xx + 150);
+            var _heartXPos = ({global_lang} != ""ja"" && !lessMargin) ? (xx + 145) : (xx + 125);
+            if (lessMargin)
+            {{
+                _xPos -= 20;
+                _heartXPos -= 20;
+            }}
             var _selectXPos = ({global_lang} == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
 
             draw_set_color(c_white);
@@ -624,8 +635,8 @@ foreach (string darkcon in darkcons)
                                 value = ceil(value);
                             var convVal = isPercent ? value * 100 : value;
                             var convBack = isPercent ? 1 / 100 : 1;
-                            if (convVal <= minMax[1] || i+1 == array_length(ranges)) {{
-                                value = clamp(value, minMax[0] * convBack, minMax[1] * convBack);
+                            if (convVal <= real(minMax[1]) || i+1 == array_length(ranges)) {{
+                                value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
@@ -638,8 +649,8 @@ foreach (string darkcon in darkcons)
                             }}
                         }} else if (string_ends_with(range, ""%"")) {{
                             var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 <= minMax[1] || i+1 == array_length(ranges)) {{
-                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
+                            if (value * 100 <= real(minMax[1]) || i+1 == array_length(ranges)) {{
+                                value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
                                 break;
                             }}
                         }}
@@ -678,8 +689,8 @@ foreach (string darkcon in darkcons)
                                 value = floor(value);
                             var convVal = isPercent ? value * 100 : value;
                             var convBack = isPercent ? 1 / 100 : 1;
-                            if (convVal >= minMax[0] || i == 0) {{
-                                value = clamp(value, minMax[0] * convBack, minMax[1] * convBack);
+                            if (convVal >= real(minMax[0]) || i == 0) {{
+                                value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
@@ -692,8 +703,8 @@ foreach (string darkcon in darkcons)
                             }}
                         }} else if (string_ends_with(range, ""%"")) {{
                             var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 >= minMax[0] || i == 0) {{
-                                value = clamp(value, minMax[0] / 100, minMax[1] / 100);
+                            if (value * 100 >= real(minMax[0]) || i == 0) {{
+                                value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
                                 break;
                             }}
                         }}
