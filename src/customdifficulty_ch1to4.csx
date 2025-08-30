@@ -174,6 +174,7 @@ foreach (string darkcon in darkcons)
 
         var menudata = ds_map_create();
         ds_map_add(menudata, ""title_en"", ""Difficulty"");
+        ds_map_add(menudata, ""left_margin_en"", 0);
 
         var formdata = array_create(0);
 
@@ -242,7 +243,7 @@ foreach (string darkcon in darkcons)
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
-        ds_map_add(rowdata, ""title_en"", ""Enemy Cooldowns"");
+        ds_map_add(rowdata, ""title_en"", ""Experiment: Enemy CDs"");
         ds_map_add(rowdata, ""value_range_en"", ""0~200%"");
         ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
         array_push(formdata, rowdata);
