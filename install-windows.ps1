@@ -181,8 +181,8 @@ function Find-ChapterFiles {
     }
   }
   # If no chapter files found, assume this is the demo
-  Log ("No chapter files found, attempting install for demo. ")
   if ($files.Count -eq 0) {
+    Log ("No chapter files found, attempting install for demo. ")
     $f = Join-Path $GamePath "data.win"
     if (Test-Path $f) { 
       $files += Get-Item $f 
