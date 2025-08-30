@@ -4,7 +4,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 <img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
 
 ## Download
-**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.3.2)**
+**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.4.0)**
 
 ## What you can change
 - **Damage Multi** — multiply all incoming damage by this value
