@@ -22,6 +22,8 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 - **Downed Regen** — when downed, party members regen 12.5% max HP every turn; this option overrides that
 - **Victory Res** — when a battle is won, all downed party members are healed up to 12.5% max HP; this option overrides that
   - OFF: Can also be switched off entirely by reducing past 0%.
+- **Experiment: Enemy CDs** — multiplier for the cooldown between enemy attacks & bullet patterns
+  - Marked experimental, as this feature is new and untested. There might be encounters that are unaffected by the setting, or affected in a negative way. Feedback very welcome.
 <details> 
   <summary><strong>CHAPTER 3 SPOILERS...</strong></summary>
 

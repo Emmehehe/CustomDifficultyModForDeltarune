@@ -70,6 +70,7 @@ foreach (string scrName in gamestartLikes)
                 global.diff_downdeficit = 1 / 2;
                 global.diff_downedregen = 1 / 8;
                 global.diff_victoryres = 1 / 8;
+                global.diff_enemycd = 1;
             }}
 
             global.diff_resettodefaults();
@@ -119,6 +120,7 @@ foreach (string scrName in loadLikes)
         global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", 1 / 2);
         global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
         global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
+        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", 1);
         ossafe_ini_close();
 
         ");
@@ -151,6 +153,7 @@ foreach (string scrName in saveLikes)
         ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
         ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
         ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
+        ini_write_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", global.diff_enemycd);
         ossafe_ini_close();
         ");
 }
@@ -171,6 +174,7 @@ foreach (string darkcon in darkcons)
 
         var menudata = ds_map_create();
         ds_map_add(menudata, ""title_en"", ""Difficulty"");
+        ds_map_add(menudata, ""left_margin_en"", 0);
 
         var formdata = array_create(0);
 
@@ -236,6 +240,12 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""title_en"", ""Victory Res"");
         ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0~100%"");
         ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
+        array_push(formdata, rowdata);
+
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Experiment: Enemy CDs"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~200%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
@@ -729,4 +739,140 @@ importGroup.QueueFindReplace("gml_Object_obj_battlecontroller_Step_0", "scr_tens
 
 // Finish edit
 importGroup.Import();
+
+// No throw code edits
+importGroup = new(Data){
+    ThrowOnNoOpFindReplace = false
+};
+
+// Enemy Cooldowns
+string[] bulletCons = {"gml_Object_obj_dbulletcontroller", };
+if (ch_no == 0) {
+    string[] demoBulletCons = {"gml_Object_obj_lancerbike_ch1", "gml_Object_obj_dbulletcontroller_ch1", "gml_Object_obj_chain_of_hell_ch1", "gml_Object_obj_wavechain_ch1",
+    "gml_Object_obj_finalchain_ch1", "gml_Object_obj_king_boss_ch1"};
+    bulletCons = bulletCons.Concat(demoBulletCons).ToArray();
+}
+if (ch_no == 1) {
+    string[] ch1BulletCons = {"gml_Object_obj_chain_of_hell", "gml_Object_obj_finalchain", "gml_Object_obj_wavechain", "gml_Object_obj_king_boss"};
+    bulletCons = bulletCons.Concat(ch1BulletCons).ToArray();
+}
+if (ch_no >= 0 && ch_no <= 2) {
+    string[] ch1to2BulletCons = {"gml_Object_obj_lancerbike"};
+    bulletCons = bulletCons.Concat(ch1to2BulletCons).ToArray();
+}
+if (ch_no >= 2 || ch_no == 0) {
+    string[] ch2upBulletCons = {"gml_Object_obj_dojograzeenemy"};
+    bulletCons = bulletCons.Concat(ch2upBulletCons).ToArray();
+}
+if (ch_no == 2 || ch_no == 0) {
+    string[] ch2BulletCons = {"gml_Object_obj_queen_bulletcontroller", "gml_Object_obj_sneo_bulletcontroller", "gml_Object_obj_thrash_swordattack",
+    "gml_Object_obj_thrash_laserattack", "gml_Object_obj_thrash_duck_attack", "gml_Object_obj_swatchling_bulletcontroller", "gml_Object_obj_swatchling_shockwave_maker",
+    "gml_Object_obj_spamton_attack_mode", "gml_Object_obj_sneo_phoneshooter", "gml_Object_obj_sneo_phonehand_master", "gml_Object_obj_sneo_phonehand",
+    "gml_Object_obj_thrash_flameattack", "gml_Object_obj_maus_liddle", "gml_Object_obj_sneo_bulletcontroller_somn", "gml_Object_obj_pipis_enemy", "gml_Object_obj_spamton_neo_enemy"};
+    bulletCons = bulletCons.Concat(ch2BulletCons).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3BulletCons = {"gml_Object_obj_shutta_rotation_attack"};
+    bulletCons = bulletCons.Concat(ch3BulletCons).ToArray();
+}
+if (ch_no == 4) {
+    string[] ch4BulletCons = {"gml_Object_obj_encounter_guei_alt"};
+    bulletCons = bulletCons.Concat(ch4BulletCons).ToArray();
+}
+string[] btimerEquals = {"99"};
+if (ch_no == 1 || ch_no == 0) {
+    string[] ch1BtimerEquals = {"20", "10", "-8"};
+    btimerEquals = btimerEquals.Concat(ch1BtimerEquals).ToArray();
+}
+if (ch_no >= 2 || ch_no == 0) {
+    string[] ch2upBtimerEquals = {"attacktimer - 10", "135", "-45", "-40", "-20"};
+    btimerEquals = btimerEquals.Concat(ch2upBtimerEquals).ToArray();
+}
+if (ch_no == 2 || ch_no == 0) {
+    string[] ch2BtimerEquals = {"35 - random(30)", "random_range(6, 18) * ratio * (1 + difficulty)", "12 * ratio", "30 * ratio * (1 - (sameattacker / sameattack))",
+    "(pattern && difficulty == 0) ? 10 : 0", "irandom(20 * ratio)", "irandom(10)", "firingspeed - irandom(10)", "-120", "999", "120", "115", "100", "-35",
+    "-30", "-10", "70", "60", "55", "45", "44", "40", "36", "30", "20", "15", "12", "10", "9", "5", "3", "2"};
+    btimerEquals = btimerEquals.Concat(ch2BtimerEquals).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3BtimerEquals = {"(40 * ratio) - (sameattacker * 5)", "-12", "88", "50", "25", "18", "10"};
+    btimerEquals = btimerEquals.Concat(ch3BtimerEquals).ToArray();
+}
+if (ch_no == 4) {
+    string[] ch4BtimerEquals = {"(5 + (35 * ratio) + (10 * (spell == 0 && ratio == 1.5))) - (24 * (spell == 0 && ratio == 2.3)) - (8 * sameattacker)", "0 - irandom(10)",
+    "-40 - irandom(30)", "starttime - 1", "100", "88", "-50", "40"};
+    btimerEquals = btimerEquals.Concat(ch4BtimerEquals).ToArray();
+}
+string[] btimerEqualEquals = {};
+if (ch_no == 1 || ch_no == 0) {
+    string[] ch1BtimerEqualEquals = {"10"};
+    btimerEqualEquals = btimerEqualEquals.Concat(ch1BtimerEqualEquals).ToArray();
+}
+if (ch_no == 2 || ch_no == 0) {
+    string[] ch2BtimerEqualEquals = {"(difficulty ? 8 : 15)", "350", "310", "270", "260", "240", "200", "192", "190", "180", "170", "150", "140", "130", "120", "115", "110", "100", "99", "90", "70",
+    "45", "40", "30", "28", "25", "20", "13", "2", "1"};
+    btimerEqualEquals = btimerEqualEquals.Concat(ch2BtimerEqualEquals).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3BtimerEqualEquals = {"1260", "1150", "1000", "900", "816", "810", "720", "700", "650", "630", "560", "540", "530", "500", "480", "450", "440", "420", "410", "400", "350", "346", "325",
+    "320", "300", "290", "265", "260", "230", "210", "200", "180", "125", "117", "115", "110", "103", "90", "86", "60", "50", "40", "20", "17", "13", "10", "3"};
+    btimerEqualEquals = btimerEqualEquals.Concat(ch3BtimerEqualEquals).ToArray();
+}
+if (ch_no == 4) {
+    string[] ch4BtimerEqualEquals = {"(starttime - 1)", "59", "35"};
+    btimerEqualEquals = btimerEqualEquals.Concat(ch4BtimerEqualEquals).ToArray();
+}
+foreach (string con in bulletCons)
+{
+    foreach (string term in btimerEquals)
+    {
+        importGroup.QueueFindReplace(con + "_Create_0", $"btimer = {term}", $"btimer = floor(global.diff_enemycd * ({term}))");
+        importGroup.QueueFindReplace(con + "_Step_0", $"btimer = {term}", $"btimer = floor(global.diff_enemycd * ({term}))");
+        importGroup.QueueFindReplace(con + "_Other_0", $"btimer = {term}", $"btimer = floor(global.diff_enemycd * ({term}))");
+        importGroup.QueueFindReplace(con + "_Other_10", $"btimer = {term}", $"btimer = floor(global.diff_enemycd * ({term}))");
+        importGroup.QueueFindReplace(con + "_Other_15", $"btimer = {term}", $"btimer = floor(global.diff_enemycd * ({term}))");
+    }
+
+    importGroup.QueueFindReplace(con + "_Step_0", "btimer < ", "btimer < global.diff_enemycd * ");
+    importGroup.QueueFindReplace(con + "_Step_0", "btimer > ", "btimer > global.diff_enemycd * ");
+    importGroup.QueueFindReplace(con + "_Step_0", "btimer <= ", "btimer <= global.diff_enemycd * ");
+    importGroup.QueueFindReplace(con + "_Step_0", "btimer >= ", "btimer >= global.diff_enemycd * ");
+    foreach (string term in btimerEqualEquals)
+    {
+        importGroup.QueueFindReplace(con + "_Step_0", $"btimer == {term}", $"btimer == ceil(global.diff_enemycd * ({term}))");
+    }
+}
+string[] dojoCons = {"gml_Object_obj_dbullet_maker"};
+if (ch_no == 0) {
+    string[] demoDojoCons = {"gml_Object_obj_dbullet_maker_ch1"};
+    dojoCons = dojoCons.Concat(demoDojoCons).ToArray();
+}
+if (ch_no >= 2 || ch_no == 0) {
+    string[] ch2upDojoCons = {"gml_Object_obj_ch2_dojo_puzzlebullet_maker"};
+    dojoCons = dojoCons.Concat(ch2upDojoCons).ToArray();
+}
+if (ch_no == 3) {
+    string[] ch3DojoCons = {"gml_Object_obj_shadow_mantle_fire_controller", "gml_Object_obj_shadow_mantle_fire3"};
+    dojoCons = dojoCons.Concat(ch3DojoCons).ToArray();
+}
+if (ch_no == 4) {
+    string[] ch4DojoCons = {"gml_Object_obj_gerson_growtangle_telegraph_new"};
+    dojoCons = dojoCons.Concat(ch4DojoCons).ToArray();
+}
+foreach (string con in dojoCons)
+{
+    importGroup.QueueFindReplace(con + "_Draw_0", "activetimer = timetarg - 1", "activetimer = floor(global.diff_enemycd * (timetarg - 1))");
+    importGroup.QueueFindReplace(con + "_Step_0", "activetimer = 18", "activetimer = floor(global.diff_enemycd * (18))");
+    importGroup.QueueFindReplace(con + "_Step_0", "activetimer = 10", "activetimer = floor(global.diff_enemycd * (10))");
+    importGroup.QueueFindReplace(con + "_Create_0", "activetimer = 20", "activetimer = floor(global.diff_enemycd * (20))");
+
+    importGroup.QueueFindReplace(con + "_Draw_0", "activetimer >= ", "activetimer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace(con + "_Draw_0", "activetimer == timetarg", "activetimer == ceil(global.diff_enemycd * timetarg)");
+    importGroup.QueueFindReplace(con + "_Step_0", "activetimer == 4", "activetimer == ceil(global.diff_enemycd * 4)");
+}
+
+// Finish edit
+// utmt keeps throwing out exceptions for gml compile errors w\ swatchling(ch2&demo)&sneo(demo) but on inspection nothing looks wrong and utmt saves changes without issue
+    // seems to be inconsistent issue with utmt - exceptions appeared and dissappeared after completely irrelevant changes
+importGroup.Import(ch_no == 2 || ch_no == 0 ? false : true);
 ScriptMessage($"Success: Custom difficulty added to '{displayName}'!");
