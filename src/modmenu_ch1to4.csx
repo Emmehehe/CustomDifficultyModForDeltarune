@@ -240,7 +240,7 @@ foreach (string darkcon in darkcons)
         // Apply acceleration to the scrollers so that they're not too fidly but not too slow
         modscroller_step = 1; // reset to 1 as first interaction should be instantaneous
         modscroller_speed_min = 0;
-        modscroller_speed_max = 10;
+        modscroller_speed_max = 3;
         modscroller_speed = modscroller_speed_min;
         modscroller_accel = 1 / 20;
 
@@ -341,7 +341,10 @@ foreach (string darkcon in darkcons)
             var _xPos = xx + 130 + left_margin;
             var _heartXPos = xx + 105 + left_margin;
 
-            var _selectXPos = ({global_lang} == ""ja"" && global.is_console) ? (xx + 385) : (xx + 430);
+            var left_value_margin = {ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""left_value_margin""")};
+            if (is_undefined(left_value_margin))
+                left_value_margin = 300;
+            var _selectXPos = xx + 130 + left_value_margin;
 
             draw_set_color(c_white);
 
@@ -386,10 +389,22 @@ foreach (string darkcon in darkcons)
                                 break;
                             }}
                         }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
-                            var isPercent = string_ends_with(range, ""%"");
-                            var convBack = isPercent ? 1 / 100 : 1;
-                            if (value == (real(labelValue[1]) * convBack) || j+1 == array_length(ranges)) {{
+                            var labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                            var isString = string_ends_with(range, ""`"");
+                            var isPercent = !isString && string_ends_with(range, ""%"");
+                            var isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+
+                            var isMatch = false;
+                            if (isString)
+                                isMatch = value == labelValue[1];
+                            else if (isBool)
+                                isMatch = value == bool(labelValue[1]);
+                            else {{ // number
+                                var convBack = isPercent ? 1 / 100 : 1;
+                                isMatch = value == real(labelValue[1]) * convBack;
+                            }}
+
+                            if (isMatch || j+1 == array_length(ranges)) {{
                                 valueString = labelValue[0];
                                 break;
                             }}
@@ -545,40 +560,78 @@ foreach (string darkcon in darkcons)
                         var row_data = form_data[global.modsubmenuno];
                         var value_range = {ds_map_find_value_lang("row_data", @"""value_range""")};
                         var ranges = !is_undefined(value_range) ? string_split(value_range, "";"") : [];
-                        var isAllLabels = true;
+                        var force_scroll = ds_map_exists(row_data, ""force_scroll"") ? ds_map_find_value(row_data, ""force_scroll"") : false;
+                        var doToggle = !force_scroll;
 
-                        for (var i = 0; i < array_length(ranges); i++) {{
-                            var range = ranges[i];
-                            if (!string_pos(""="", range)) {{
-                                isAllLabels = false;
-                                break;
+                        if (doToggle) {{
+                            for (var i = 0; i < array_length(ranges); i++) {{
+                                var range = ranges[i];
+                                if (!string_pos(""="", range)) {{
+                                    doToggle = false;
+                                    break;
+                                }}
                             }}
                         }}
 
-                        if (isAllLabels || array_length(ranges) <= 0) {{
+                        if (doToggle || array_length(ranges) <= 0) {{
                             global.modsubmenuselected = false;
                         }}
 
-                        if (isAllLabels && array_length(ranges) > 0) {{
+                        if (doToggle && array_length(ranges) > 0) {{
                             var value = variable_instance_get(global, ds_map_find_value(row_data, ""value_name""));
 
+                            var foundOption = false;
                             for (var i = 0; i < array_length(ranges); i++) {{
                                 var range = ranges[i];
                                 if (string_pos(""="", range)) {{
-                                    var labelValue = string_split(range, ""="");
-                                    if (value < real(labelValue[1])) {{
-                                        value = real(labelValue[1]);
-                                        break;
-                                    }} else if (i+1 == array_length(ranges)) {{
+                                    var labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                                    var isString = string_ends_with(range, ""`"");
+                                    var isPercent = !isString && string_ends_with(range, ""%"");
+                                    var isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+
+                                    var isMatch = false;
+                                    if (isString)
+                                        isMatch = value == labelValue[1];
+                                    else if (isBool)
+                                        isMatch = value == bool(labelValue[1]);
+                                    else {{ // number
+                                        var convBack = isPercent ? 1 / 100 : 1;
+                                        isMatch = value == real(labelValue[1]) * convBack;
+                                    }}
+
+                                    if (!foundOption && i+1 == array_length(ranges)) {{
                                         range = ranges[0];
-                                        labelValue = string_split(range, ""="");
-                                        value = real(labelValue[1]);
+                                        labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                                        isString = string_ends_with(range, ""`"");
+                                        isPercent = !isString && string_ends_with(range, ""%"");
+                                        isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+                                    }}
+
+                                    if (foundOption || i+1 == array_length(ranges)) {{
+                                        if (isString)
+                                            value = labelValue[1];
+                                        else if (isBool)
+                                            value = bool(labelValue[1]);
+                                        else {{ // number
+                                            value = real(labelValue[1]) * convBack;
+                                        }}
                                         break;
+                                    }}
+
+                                    if (isMatch) {{
+                                        foundOption = true;
                                     }}
                                 }}
                             }}
 
                             variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                            var on_change = ds_map_find_value(row_data, ""on_change"");
+                            if (!is_undefined(on_change))
+                            {{
+                                var functocall = variable_instance_get(global, on_change);
+                                functocall();
+                            }}
                         }}
 
                         var func_name = ds_map_find_value(row_data, ""func_name"");
@@ -610,122 +663,253 @@ foreach (string darkcon in darkcons)
                 var value_name = ds_map_find_value(row_data, ""value_name"");
                 var value = !is_undefined(value_name) ? variable_instance_get(global, value_name) : -1;
 
-                if (right_h() && modscroller_step >= 1)
-                {{
-                    var value_adjust = 0;
-                    if (value <= -2)
-                        value_adjust += 0.1;
-                    else if (value <= -1)
-                        value_adjust += 0.05;
-                    else if (value <= -0.5)
-                        value_adjust += 0.02;
-                    else if (value <= -0.2)
-                        value_adjust += 0.01;
-                    else if (value < 0.2)
-                        value_adjust += 0.005;
-                    else if (value < 0.5)
-                        value_adjust += 0.01;
-                    else if (value < 1)
-                        value_adjust += 0.02;
-                    else if (value < 2)
-                        value_adjust += 0.05;
-                    else
-                        value_adjust += 0.1;
+                var scroll_todo = modscroller_step div 1;
 
-                    value_adjust *= modscroller_step div 1;
-                    value += value_adjust;
+                if (right_h() && scroll_todo > 0)
+                {{
+                    var isAllLabels = true;
 
                     for (var i = 0; i < array_length(ranges); i++) {{
                         var range = ranges[i];
-                        if (string_pos(""~"", range)) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
-                            var isPercent = string_ends_with(range, ""%"");
-                            if (!isPercent)
-                                value = ceil(value);
-                            var convVal = isPercent ? value * 100 : value;
-                            var convBack = isPercent ? 1 / 100 : 1;
-                            if (convVal <= real(minMax[1]) || i+1 == array_length(ranges)) {{
-                                value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
-                                break;
+                        if (!string_pos(""="", range)) {{
+                            isAllLabels = false;
+                            break;
+                        }}
+                    }}
+
+                    if (isAllLabels) {{
+                        var foundOption = false;
+                        for (var i = 0; i < array_length(ranges); i++) {{
+                            var range = ranges[i];
+                            if (string_pos(""="", range)) {{
+                                var labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                                var isString = string_ends_with(range, ""`"");
+                                var isPercent = !isString && string_ends_with(range, ""%"");
+                                var isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+
+                                var isMatch = false;
+                                if (isString)
+                                    isMatch = value == labelValue[1];
+                                else if (isBool)
+                                    isMatch = value == bool(labelValue[1]);
+                                else {{ // number
+                                    var convBack = isPercent ? 1 / 100 : 1;
+                                    isMatch = value == real(labelValue[1]) * convBack;
+                                }}
+
+                                if (!foundOption && i+1 == array_length(ranges)) {{
+                                    range = ranges[0];
+                                    labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                                    isString = string_ends_with(range, ""`"");
+                                    isPercent = !isString && string_ends_with(range, ""%"");
+                                    isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+                                }}
+
+                                if (foundOption || i+1 == array_length(ranges)) {{
+                                    if (isString)
+                                        value = labelValue[1];
+                                    else if (isBool)
+                                        value = bool(labelValue[1]);
+                                    else {{ // number
+                                        value = real(labelValue[1]) * convBack;
+                                    }}
+                                    break;
+                                }}
+
+                                if (isMatch) {{
+                                    foundOption = true;
+                                }}
                             }}
-                        }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
-                            var isPercent = string_ends_with(range, ""%"");
-                            var convBack = isPercent ? 1 / 100 : 1;
-                            if (value <= (real(labelValue[1]) * convBack) || i+1 == array_length(ranges)) {{
-                                value = real(labelValue[1]) * convBack;
-                                break;
-                            }}
-                        }} else if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 <= real(minMax[1]) || i+1 == array_length(ranges)) {{
-                                value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
-                                break;
+                        }}
+                    }}
+                    else
+                    {{
+                        var value_adjust = 0;
+                        if (value <= -2)
+                            value_adjust = 0.1;
+                        else if (value <= -1)
+                            value_adjust = 0.05;
+                        else if (value <= -0.5)
+                            value_adjust = 0.02;
+                        else if (value <= -0.2)
+                            value_adjust = 0.01;
+                        else if (value < 0.2)
+                            value_adjust = 0.005;
+                        else if (value < 0.5)
+                            value_adjust = 0.01;
+                        else if (value < 1)
+                            value_adjust = 0.02;
+                        else if (value < 2)
+                            value_adjust = 0.05;
+                        else
+                            value_adjust = 0.1;
+
+                        value += value_adjust * scroll_todo;
+
+                        for (var i = 0; i < array_length(ranges); i++) {{
+                            var range = ranges[i];
+                            if (string_pos(""~"", range)) {{
+                                var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                                var isPercent = string_ends_with(range, ""%"");
+                                if (!isPercent)
+                                    value = ceil(value);
+                                var convVal = isPercent ? value * 100 : value;
+                                var convBack = isPercent ? 1 / 100 : 1;
+                                if (convVal <= real(minMax[1]) || i+1 == array_length(ranges)) {{
+                                    value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
+                                    break;
+                                }}
+                            }} else if (string_pos(""="", range)) {{
+                                var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                                var isPercent = string_ends_with(range, ""%"");
+                                var convBack = isPercent ? 1 / 100 : 1;
+                                if (value <= (real(labelValue[1]) * convBack) || i+1 == array_length(ranges)) {{
+                                    value = real(labelValue[1]) * convBack;
+                                    break;
+                                }}
+                            }} else if (string_ends_with(range, ""%"")) {{
+                                var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                                if (value * 100 <= real(minMax[1]) || i+1 == array_length(ranges)) {{
+                                    value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
+                                    break;
+                                }}
                             }}
                         }}
                     }}
 
                     variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                    var on_change = ds_map_find_value(row_data, ""on_change"");
+                    if (!is_undefined(on_change))
+                    {{
+                        var functocall = variable_instance_get(global, on_change);
+                        functocall();
+                    }}
 
                     modscroller_step = modscroller_step % 1;
                 }}
 
-                if (left_h() && modscroller_step >= 1)
+                if (left_h() && scroll_todo > 0)
                 {{
-                    var value_adjust = 0;
-                    if (value < -2)
-                        value_adjust -= 0.1;
-                    else if (value < -1)
-                        value_adjust -= 0.05;
-                    else if (value < -0.5)
-                        value_adjust -= 0.02;
-                    else if (value < -0.2)
-                        value_adjust -= 0.01;
-                    else if (value <= 0.2)
-                        value_adjust -= 0.005;
-                    else if (value <= 0.5)
-                        value_adjust -= 0.01;
-                    else if (value <= 1)
-                        value_adjust -= 0.02;
-                    else if (value <= 2)
-                        value_adjust -= 0.05;
-                    else
-                        value_adjust -= 0.1;
+                    var isAllLabels = true;
 
-                    value_adjust *= modscroller_step div 1;
-                    value += value_adjust;
-
-                    for (var i = array_length(ranges) - 1; i >= 0; i--) {{
+                    for (var i = 0; i < array_length(ranges); i++) {{
                         var range = ranges[i];
-                        if (string_pos(""~"", range)) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
-                            var isPercent = string_ends_with(range, ""%"");
-                            if (!isPercent)
-                                value = floor(value);
-                            var convVal = isPercent ? value * 100 : value;
-                            var convBack = isPercent ? 1 / 100 : 1;
-                            if (convVal >= real(minMax[0]) || i == 0) {{
-                                value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
-                                break;
+                        if (!string_pos(""="", range)) {{
+                            isAllLabels = false;
+                            break;
+                        }}
+                    }}
+
+                    if (isAllLabels) {{
+                        var foundOption = false;
+                        for (var i = array_length(ranges) - 1; i >= 0; i--) {{
+                            var range = ranges[i];
+                            if (string_pos(""="", range)) {{
+                                var labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                                var isString = string_ends_with(range, ""`"");
+                                var isPercent = !isString && string_ends_with(range, ""%"");
+                                var isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+
+                                var isMatch = false;
+                                if (isString)
+                                    isMatch = value == labelValue[1];
+                                else if (isBool)
+                                    isMatch = value == bool(labelValue[1]);
+                                else {{ // number
+                                    var convBack = isPercent ? 1 / 100 : 1;
+                                    isMatch = value == real(labelValue[1]) * convBack;
+                                }}
+
+                                if (!foundOption && i == 0) {{
+                                    range = ranges[array_length(ranges) - 1];
+                                    labelValue = string_split(string_replace(string_replace(range, ""%"", """"), ""`"", """"), ""="");
+                                    isString = string_ends_with(range, ""`"");
+                                    isPercent = !isString && string_ends_with(range, ""%"");
+                                    isBool = !isPercent && (labelValue[1] == ""false"" || labelValue[1] == ""true"");
+                                }}
+
+                                if (foundOption || i == 0) {{
+                                    if (isString)
+                                        value = labelValue[1];
+                                    else if (isBool)
+                                        value = bool(labelValue[1]);
+                                    else {{ // number
+                                        value = real(labelValue[1]) * convBack;
+                                    }}
+                                    break;
+                                }}
+
+                                if (isMatch) {{
+                                    foundOption = true;
+                                }}
                             }}
-                        }} else if (string_pos(""="", range)) {{
-                            var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
-                            var isPercent = string_ends_with(range, ""%"");
-                            var convBack = isPercent ? 1 / 100 : 1;
-                            if (value >= (real(labelValue[1]) * convBack) || i == 0) {{
-                                value = real(labelValue[1]) * convBack;
-                                break;
-                            }}
-                        }} else if (string_ends_with(range, ""%"")) {{
-                            var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
-                            if (value * 100 >= real(minMax[0]) || i == 0) {{
-                                value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
-                                break;
+                        }}
+                    }}
+                    else
+                    {{
+                        var value_adjust = 0;
+                        if (value < -2)
+                            value_adjust = -0.1;
+                        else if (value < -1)
+                            value_adjust = -0.05;
+                        else if (value < -0.5)
+                            value_adjust = -0.02;
+                        else if (value < -0.2)
+                            value_adjust = -0.01;
+                        else if (value <= 0.2)
+                            value_adjust = -0.005;
+                        else if (value <= 0.5)
+                            value_adjust = -0.01;
+                        else if (value <= 1)
+                            value_adjust = -0.02;
+                        else if (value <= 2)
+                            value_adjust = -0.05;
+                        else
+                            value_adjust = -0.1;
+
+                        var scroll_todo = modscroller_step div 1;
+                        value += value_adjust * scroll_todo;
+
+                        for (var i = array_length(ranges) - 1; i >= 0; i--) {{
+                            var range = ranges[i];
+                            if (string_pos(""~"", range)) {{
+                                var minMax = string_split(string_replace(range, ""%"", """"), ""~"");
+                                var isPercent = string_ends_with(range, ""%"");
+                                if (!isPercent)
+                                    value = floor(value);
+                                var convVal = isPercent ? value * 100 : value;
+                                var convBack = isPercent ? 1 / 100 : 1;
+                                if (convVal >= real(minMax[0]) || i == 0) {{
+                                    value = clamp(value, real(minMax[0]) * convBack, real(minMax[1]) * convBack);
+                                    break;
+                                }}
+                            }} else if (string_pos(""="", range)) {{
+                                var labelValue = string_split(string_replace(range, ""%"", """"), ""="");
+                                var isPercent = string_ends_with(range, ""%"");
+                                var convBack = isPercent ? 1 / 100 : 1;
+                                if (value >= (real(labelValue[1]) * convBack) || i == 0) {{
+                                    value = real(labelValue[1]) * convBack;
+                                    break;
+                                }}
+                            }} else if (string_ends_with(range, ""%"")) {{
+                                var minMax = string_split(string_replace(range, ""%"", """"), ""-"");
+                                if (value * 100 >= real(minMax[0]) || i == 0) {{
+                                    value = clamp(value, real(minMax[0]) / 100, real(minMax[1]) / 100);
+                                    break;
+                                }}
                             }}
                         }}
                     }}
 
                     variable_instance_set(global, ds_map_find_value(row_data, ""value_name""), value);
+
+                    var on_change = ds_map_find_value(row_data, ""on_change"");
+                    if (!is_undefined(on_change))
+                    {{
+                        var functocall = variable_instance_get(global, on_change);
+                        functocall();
+                    }}
 
                     modscroller_step = modscroller_step % 1;
                 }}
