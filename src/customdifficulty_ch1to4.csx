@@ -69,31 +69,31 @@ presets.Add(
     "Hard", new Preset {
         damagemulti   = 1.5f,
         gameboarddmgx = 1.25f,
-        iframes       = 1 / 1.25f,
-        enemycd       = 1 / 1.25f
+        iframes       = 0.8f,
+        enemycd       = 0.8f
     });
 presets.Add(
     "Nightmare", new Preset {
-        damagemulti   = 2.25f,
-        gameboarddmgx = 1.625f,
-        iframes       = 1 / 1.5f,
-        enemycd       = 1 / 1.5f
+        damagemulti   = 2,
+        gameboarddmgx = 1.5f,
+        iframes       = 0.65f,
+        enemycd       = 0.65f
     });
 presets.Add(
-    "Nightmare-Ex", new Preset {
+    "Nightmare-EX", new Preset {
         damagemulti   = 3,
         gameboarddmgx = 2,
-        iframes       = 1 / 2f,
-        enemycd       = 1 / 2f
+        iframes       = 0.5f,
+        enemycd       = 0.5f
     });
 presets.Add(
     "Nightmare-Neo", new Preset {
         damagemulti   = 3,
         gameboarddmgx = 2,
-        iframes       = 1 / 2f,
-        enemycd       = 1 / 2f,
-        tpgain        = 1 / 2f,
-        battlerewards = 1 / 2f,
+        iframes       = 0.5f,
+        enemycd       = 0.5f,
+        tpgain        = 0.5f,
+        battlerewards = 0.5f,
         downdeficit   = 1,
         downedregen   = 0,
         victoryres    = 0
@@ -107,24 +107,24 @@ presets.Add(
     "Nghtmr-No-Hit", new Preset {
         damagemulti   = 2147483647,
         hitall        = true,
-        iframes       = 1 / 1.5f,
-        enemycd       = 1 / 1.5f
+        iframes       = 0.65f,
+        enemycd       = 0.65f
     });
 presets.Add(
-    "Nghtmr-NH-Ex", new Preset {
+    "Nghtmr-NH-EX", new Preset {
         damagemulti   = 2147483647,
         hitall        = true,
-        iframes       = 1 / 2f,
-        enemycd       = 1 / 2f
+        iframes       = 0.5f,
+        enemycd       = 0.5f
     });
 presets.Add(
     "Nghtmr-NH-Neo", new Preset {
         damagemulti   = 2147483647,
         hitall        = true,
-        iframes       = 1 / 2f,
-        enemycd       = 1 / 2f,
-        tpgain        = 1 / 2f,
-        battlerewards = 1 / 2f,
+        iframes       = 0.5f,
+        enemycd       = 0.5f,
+        tpgain        = 0.5f,
+        battlerewards = 0.5f,
         downdeficit   = 1,
         downedregen   = 0,
         victoryres    = 0
@@ -150,17 +150,13 @@ foreach (string scrName in gamestartLikes)
                     {string.Join("\n", presets.Select(pair => @$"
                         case ""{pair.Key}"":
                             global.diff_damagemulti = {pair.Value.damagemulti.ToString("F10", CultureInfo.InvariantCulture)};
-                            {(ch_no != 3 ? "" : @$"
                             global.diff_gameboarddmgx = {pair.Value.gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)};
-                            ")}
                             global.diff_hitall = {pair.Value.hitall.ToString().ToLower()};
                             global.diff_iframes = {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_enemycd = {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_battlerewards = {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)};
-                            {(ch_no != 3 ? "" : @$"
                             global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};
-                            ")}
                             global.diff_downdeficit = {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_downedregen = {pair.Value.downedregen.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_victoryres = {pair.Value.victoryres.ToString("F10", CultureInfo.InvariantCulture)};
@@ -219,17 +215,13 @@ foreach (string scrName in loadLikes)
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
         global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", {presets["Normal"].damagemulti.ToString("F10", CultureInfo.InvariantCulture)});
-        {(ch_no != 3 ? "" : @$"
         global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", {presets["Normal"].gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)});
-        ")}
         global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", {presets["Normal"].hitall.ToString().ToLower()});
         global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", {presets["Normal"].iframes.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", {presets["Normal"].enemycd.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", {presets["Normal"].tpgain.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", {presets["Normal"].battlerewards.ToString("F10", CultureInfo.InvariantCulture)});
-        {(ch_no != 3 ? "" : @$"
         global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", {presets["Normal"].rewardranking.ToString().ToLower()});
-        ")}
         global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", {presets["Normal"].downdeficit.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", {presets["Normal"].downedregen.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", {presets["Normal"].victoryres.ToString("F10", CultureInfo.InvariantCulture)});
@@ -238,13 +230,13 @@ foreach (string scrName in loadLikes)
         // Determine preset
         {string.Join(" else ", presets.Select(pair => @$"
             if (global.diff_damagemulti == {pair.Value.damagemulti.ToString("F10", CultureInfo.InvariantCulture)}
-                {(ch_no != 3 ? "" : @$"&& global.diff_gameboarddmgx == {pair.Value.gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)}")}
+                && global.diff_gameboarddmgx == {pair.Value.gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_hitall == {pair.Value.hitall.ToString().ToLower()}
                 && global.diff_iframes == {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_enemycd == {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_tpgain == {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_battlerewards == {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)}
-                {(ch_no != 3 ? "" : @$"&& global.diff_rewardranking == {pair.Value.rewardranking.ToString().ToLower()}")}
+                && global.diff_rewardranking == {pair.Value.rewardranking.ToString().ToLower()}
                 && global.diff_downdeficit == {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_downedregen == {pair.Value.downedregen.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_victoryres == {pair.Value.victoryres.ToString("F10", CultureInfo.InvariantCulture)}) {{
@@ -272,17 +264,13 @@ foreach (string scrName in saveLikes)
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
         ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
-        {(ch_no != 3 ? "" : @"
         ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
-        ")}
         ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
         ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
         ini_write_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", global.diff_enemycd);
         ini_write_real(""DIFFICULTY"", ""TP_GAIN"", global.diff_tpgain);
         ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
-        {(ch_no != 3 ? "" : @"
         ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
-        ")}
         ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
         ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
         ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
@@ -307,7 +295,7 @@ foreach (string darkcon in darkcons)
         var menudata = ds_map_create();
         ds_map_add(menudata, ""title_en"", ""Difficulty"");
         ds_map_add(menudata, ""left_margin_en"", 0);
-        ds_map_add(menudata, ""left_value_margin_en"", 240);
+        ds_map_add(menudata, ""left_value_pos_en"", 240);
 
         var formdata = array_create(0);
 

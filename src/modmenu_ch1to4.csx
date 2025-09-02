@@ -341,10 +341,10 @@ foreach (string darkcon in darkcons)
             var _xPos = xx + 130 + left_margin;
             var _heartXPos = xx + 105 + left_margin;
 
-            var left_value_margin = {ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""left_value_margin""")};
-            if (is_undefined(left_value_margin))
-                left_value_margin = 300;
-            var _selectXPos = xx + 130 + left_value_margin;
+            var left_value_pos = {ds_map_find_value_lang("global.modmenu_data[global.modmenuno]", @"""left_value_pos""")};
+            if (is_undefined(left_value_pos))
+                left_value_pos = 300;
+            var _selectXPos = xx + 130 + left_value_pos;
 
             draw_set_color(c_white);
 
