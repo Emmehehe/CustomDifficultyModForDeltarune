@@ -57,6 +57,7 @@ readonly struct Preset {
     public readonly float downedregen { get; init; }   = 1 / 8f;
     public readonly float victoryres { get; init; }    = 1 / 8f;
 }
+const string preset_default = "Normal";
 Dictionary<string, Preset> presets = new Dictionary<string, Preset>();
 presets.Add(
     "Easy", new Preset {
@@ -64,7 +65,7 @@ presets.Add(
         iframes       = 1.5f
     });
 presets.Add(
-    "Normal", new Preset { /* Use defaults. */ });
+    preset_default, new Preset { /* Use defaults. */ });
 presets.Add(
     "Hard", new Preset {
         damagemulti   = 1.5f,
@@ -175,13 +176,13 @@ foreach (string scrName in gamestartLikes)
                 global.diff_usepreset();
             }}
 
-            global.diff_usepreset_normal = function()
+            global.diff_usepreset_default = function()
             {{
-                global.diff_preset = ""Normal"";
+                global.diff_preset = ""{preset_default}"";
                 global.diff_usepreset();
             }}
 
-            global.diff_usepreset_normal();
+            global.diff_usepreset_default();
 
         ");
 }
@@ -214,17 +215,17 @@ foreach (string scrName in loadLikes)
         ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
-        global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", {presets["Normal"].damagemulti.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", {presets["Normal"].gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", {presets["Normal"].hitall.ToString().ToLower()});
-        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", {presets["Normal"].iframes.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", {presets["Normal"].enemycd.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", {presets["Normal"].tpgain.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", {presets["Normal"].battlerewards.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", {presets["Normal"].rewardranking.ToString().ToLower()});
-        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", {presets["Normal"].downdeficit.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", {presets["Normal"].downedregen.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", {presets["Normal"].victoryres.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", {presets[preset_default].damagemulti.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", {presets[preset_default].gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", {presets[preset_default].hitall.ToString().ToLower()});
+        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", {presets[preset_default].iframes.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", {presets[preset_default].enemycd.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", {presets[preset_default].tpgain.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", {presets[preset_default].battlerewards.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", {presets[preset_default].rewardranking.ToString().ToLower()});
+        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", {presets[preset_default].downdeficit.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", {presets[preset_default].downedregen.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", {presets[preset_default].victoryres.ToString("F10", CultureInfo.InvariantCulture)});
         ossafe_ini_close();
 
         // Determine preset
@@ -390,7 +391,7 @@ foreach (string darkcon in darkcons)
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
-        ds_map_add(rowdata, ""func_name"", ""diff_usepreset_normal"");
+        ds_map_add(rowdata, ""func_name"", ""diff_usepreset_default"");
         array_push(formdata, rowdata);
 
         ds_map_add(menudata, ""form"", formdata);
