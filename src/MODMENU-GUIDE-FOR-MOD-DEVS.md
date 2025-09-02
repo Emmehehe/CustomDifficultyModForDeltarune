@@ -81,7 +81,7 @@ Multiple ranges can be combined using `;`.
  - `"0~200%"` — User can slide the value between 0% to 200%, the value is set between 0 and 2.
  - `"-100~100%"` — User can slide the value between -100% to 100%, the value is set between -1 and 1.
  - `"OFF=false;ON=true"` — User can toggle between 'OFF' and 'ON', the value is set to either false (off) or true (on).
- - `"RED=16711680;GREEN=65280;BLUE=255"` — User can toggle through 'RED', 'GREEN', and 'BLUE', the value is set appropriately.
+ - `"RED=0x0000FF;GREEN=0x00FF00;BLUE=0xFF0000"` — User can toggle through 'RED', 'GREEN', and 'BLUE', the value is set appropriately. GML uses the color format BGR.
  - `"SMALL=50%;MEDIUM=100%;LARGE=200%"` — User can toggle through 'SMALL'(0.5), 'MEDIUM'(1), and 'LARGE'(2), the percentage value is set appropriately.
  - ``"EASY=Easy`;NORMAL=Normal`;HARD=Hard`"`` — User can toggle through 'EASY'(Easy), 'NORMAL'(Normal), and 'HARD'(Hard), the string value is set appropriately.
  - `"OFF=-1;0~1000%"` — User can slide the value between 0% to 1000%, the value is set between 0 and 10. Additionally, if the user slides the value below 0%, they can set the option to 'OFF', aka -1.
