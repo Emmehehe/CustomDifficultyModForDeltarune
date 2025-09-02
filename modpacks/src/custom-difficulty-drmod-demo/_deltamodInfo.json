@@ -2,7 +2,7 @@
     "metadata": {
         "name": "Custom Difficulty",
         "version": "1.5.0",
-        "description": "Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.",
+        "description": "Difficulty options for DELTARUNE. Make the game Easy, Hard, or Nightmare. No-hit options included.",
         "author": ["Emmahaha"],
         "demoMod": true,
         "packageID": "com.emmahaha.customdiffdemo",
