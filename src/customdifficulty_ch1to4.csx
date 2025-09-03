@@ -97,7 +97,7 @@ presets.Add(
         battlerewards = 0.5f,
         downdeficit   = 1,
         downedregen   = 0,
-        victoryres    = 0
+        victoryres    = -1
     });
 presets.Add(
     "No-Hit", new Preset {
@@ -128,7 +128,7 @@ presets.Add(
         battlerewards = 0.5f,
         downdeficit   = 1,
         downedregen   = 0,
-        victoryres    = 0
+        victoryres    = -1
     });
 
 // Add globals
@@ -887,14 +887,20 @@ importGroup = new(Data){
 };
 
 // Enemy Cooldowns
-string[] bulletCons = {"gml_Object_obj_dbulletcontroller", };
+string one_over_cd = "(global.diff_enemycd <= 0 ? 1 : (1/global.diff_enemycd))";
+string one_over_cd_2 = "(global.diff_enemycd <= 0 ? 1 : (1/(global.diff_enemycd*global.diff_enemycd)))"; // TODO remove if unused
+// some attacks rely on the heart existing so have it fly out onto the box sooner
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = global.diff_enemycd * 8");
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Step_0", "image_alpha += 0.334;", $"image_alpha += {one_over_cd} * 0.334");
+
+string[] bulletCons = {"gml_Object_obj_dbulletcontroller"};
 if (ch_no == 0) {
-    string[] demoBulletCons = {"gml_Object_obj_lancerbike_ch1", "gml_Object_obj_dbulletcontroller_ch1", "gml_Object_obj_chain_of_hell_ch1", "gml_Object_obj_wavechain_ch1",
+    string[] demoBulletCons = {"gml_Object_obj_lancerbike_ch1", "gml_Object_obj_dbulletcontroller_ch1", "gml_Object_obj_chain_of_hell_ch1",
     "gml_Object_obj_finalchain_ch1", "gml_Object_obj_king_boss_ch1"};
     bulletCons = bulletCons.Concat(demoBulletCons).ToArray();
 }
 if (ch_no == 1) {
-    string[] ch1BulletCons = {"gml_Object_obj_chain_of_hell", "gml_Object_obj_finalchain", "gml_Object_obj_wavechain", "gml_Object_obj_king_boss"};
+    string[] ch1BulletCons = {"gml_Object_obj_chain_of_hell", "gml_Object_obj_finalchain", "gml_Object_obj_king_boss"};
     bulletCons = bulletCons.Concat(ch1BulletCons).ToArray();
 }
 if (ch_no >= 0 && ch_no <= 2) {
@@ -983,6 +989,20 @@ foreach (string con in bulletCons)
         importGroup.QueueFindReplace(con + "_Step_0", $"btimer == {term}", $"btimer == ceil(global.diff_enemycd * ({term}))");
     }
 }
+if (ch_no == 1) {
+    // TODO and demo
+    // Reduce randomness for lower cooldowns as heart shaper can trap you.
+    importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(obj_battlesolid.x - 50) + random(100)",
+        "(obj_battlesolid.x - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+    importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(obj_battlesolid.y - 50) + random(100)",
+        "(obj_battlesolid.y - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+
+    // King's wave chain spades become undodgeable below a certain value.
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 20", "btimer >= max(12, global.diff_enemycd * 20)");
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 18", "btimer >= max(12, global.diff_enemycd * 18)");
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 16", "btimer >= max(12, global.diff_enemycd * 16)");
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 14", "btimer >= max(12, global.diff_enemycd * 14)");
+}
 string[] dojoCons = {"gml_Object_obj_dbullet_maker"};
 if (ch_no == 0) {
     string[] demoDojoCons = {"gml_Object_obj_dbullet_maker_ch1"};
@@ -1010,6 +1030,70 @@ foreach (string con in dojoCons)
     importGroup.QueueFindReplace(con + "_Draw_0", "activetimer >= ", "activetimer >= global.diff_enemycd * ");
     importGroup.QueueFindReplace(con + "_Draw_0", "activetimer == timetarg", "activetimer == ceil(global.diff_enemycd * timetarg)");
     importGroup.QueueFindReplace(con + "_Step_0", "activetimer == 4", "activetimer == ceil(global.diff_enemycd * 4)");
+}
+if (ch_no == 1) {
+    // TODO and demo
+    // include Lancer overworld attacks
+    importGroup.QueueFindReplace("gml_Object_obj_overworld_spademaker_Create_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_overworld_spademaker_Alarm_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
+
+    // include K.Round leap attacks
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "jumptimer >= ", "jumptimer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer >= ", "s_timer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer == 20", "s_timer == ceil(global.diff_enemycd * 20)");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "image_xscale += ", $"image_xscale += {one_over_cd} * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "image_yscale += ", $"image_yscale += {one_over_cd} * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "jumptimer = 10", "jumptimer = floor(global.diff_enemycd * (10))");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer = 21", "s_timer = floor(global.diff_enemycd * (21))");
+
+    // include star bird's overworld attacks
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer >= ", "attacktimer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer = 36", "attacktimer = floor(global.diff_enemycd * (36))");
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer = 38", "attacktimer = floor(global.diff_enemycd * (38))");
+    // fix star bullets dissappearing too soon
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "if (shot == 1)", "if (false && shot == 1)");
+    importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Create_0", "trackstarbullet = array_create(0);");
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "starbullet[i].depth = 1000;", @"
+        starbullet[i].depth = 1000;
+        array_push(trackstarbullet, starbullet[i]);
+    ");
+    importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Step_0", @"
+        var newtrackstarbullet = array_create(0);
+        var cam = view_camera[0];
+        var x1 = camera_get_view_x(cam);
+        var y1 = camera_get_view_y(cam);
+        var x2 = x1 + camera_get_view_width(cam);
+        var y2 = y1 + camera_get_view_height(cam);
+        for (var i = 0; i < array_length(trackstarbullet); i++) {
+            with (trackstarbullet[i]) {
+                if(!point_in_rectangle( x, y, x1, y1, x2, y2))
+                    instance_destroy();
+                else
+                    array_push(newtrackstarbullet, self);
+            }
+        }
+        trackstarbullet = newtrackstarbullet;
+    ");
+
+    // King's chain of hell could trap you, shorten chain length sooner
+    importGroup.QueueFindReplace("gml_Object_obj_chain_of_hell_Step_0", "bullettimer >= 30", "bullettimer >= min(30, global.diff_enemycd * 30)");
+
+    // include box drag chain's time to decide next path
+    importGroup.QueueFindReplace("gml_Object_obj_finalchain_Step_0", "gotimer >= ", "gotimer >= global.diff_enemycd * ");
+
+    // TODO jevil
+}
+if (ch_no == 2) {
+    // TODO and demo
+    // include hangplugs
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer = ", "timer = global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer -= ", "timer -= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timerb == timerbtarget", "timerb == ceil(global.diff_enemycd * timerbtarget)");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timer >= ", "timer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timer = ", "timer = global.diff_enemycd * ");
+
+    // TODO shoottimer
+    // TODO hangsparktimer
 }
 
 // Finish edit
