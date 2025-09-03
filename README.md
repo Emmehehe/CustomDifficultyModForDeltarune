@@ -13,7 +13,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
   - Hard `+50% damage, -20% i-frames & enemy cooldowns`
   - Nightmare `+100% increased damage, -35% i-frames & enemy cooldowns`
   - Nightmare-EX `+200% damage, -50% i-frames & enemy cooldowns`
-  - Nightmare-Neo `NIGHTMARE-EX with -50% TP-gain & battle rewards, +100% downed deficit, no passive regen for downed characters`
+  - Nightmare-Neo `NIGHTMARE-EX with -50% battle rewards, +100% downed deficit, no passive regen for downed characters`
   - No-Hit `Infinite damage to every party member`
   - Nghtmr-No-Hit `NO-HIT & -35% i-frames & enemy cooldowns`
   - Nghtmr-NH-EX `NO-HIT & -50% i-frames & enemy cooldowns`

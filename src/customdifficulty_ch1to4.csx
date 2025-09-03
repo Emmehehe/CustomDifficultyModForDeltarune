@@ -93,7 +93,6 @@ presets.Add(
         gameboarddmgx = 2,
         iframes       = 0.5f,
         enemycd       = 0.5f,
-        tpgain        = 0.5f,
         battlerewards = 0.5f,
         downdeficit   = 1,
         downedregen   = 0,
@@ -124,7 +123,6 @@ presets.Add(
         hitall        = true,
         iframes       = 0.5f,
         enemycd       = 0.5f,
-        tpgain        = 0.5f,
         battlerewards = 0.5f,
         downdeficit   = 1,
         downedregen   = 0,
@@ -890,8 +888,8 @@ importGroup = new(Data){
 string one_over_cd = "(global.diff_enemycd <= 0 ? 1 : (1/global.diff_enemycd))";
 string one_over_cd_2 = "(global.diff_enemycd <= 0 ? 1 : (1/(global.diff_enemycd*global.diff_enemycd)))"; // TODO remove if unused
 // some attacks rely on the heart existing so have it fly out onto the box sooner
-importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = global.diff_enemycd * 8");
-importGroup.QueueFindReplace("gml_Object_obj_moveheart_Step_0", "image_alpha += 0.334;", $"image_alpha += {one_over_cd} * 0.334");
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = min(8, global.diff_enemycd * 8)");
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Step_0", "image_alpha += 0.334;", $"image_alpha += max(0.334, {one_over_cd} * 0.334)");
 
 string[] bulletCons = {"gml_Object_obj_dbulletcontroller"};
 if (ch_no == 0) {
