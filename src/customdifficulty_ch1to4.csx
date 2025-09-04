@@ -41,6 +41,9 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
     ThrowOnNoOpFindReplace = true
 };
 
+// Hide TP Gain from the menu to reduce clutter as it's not that useful. Users can still adjust TP Gain from the .ini file if needed.
+readonly bool hide_tpgain = true;
+
 // Define presets
 readonly struct Preset {
     public Preset () {}
@@ -153,7 +156,7 @@ foreach (string scrName in gamestartLikes)
                             global.diff_hitall = {pair.Value.hitall.ToString().ToLower()};
                             global.diff_iframes = {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_enemycd = {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)};
-                            global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};
+                            {(hide_tpgain ? "" : $"global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};")}
                             global.diff_battlerewards = {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};
                             global.diff_downdeficit = {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)};
@@ -343,12 +346,14 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
+        {(hide_tpgain ? "" : @"
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""TP Gain"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
         ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
+        ")}
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
