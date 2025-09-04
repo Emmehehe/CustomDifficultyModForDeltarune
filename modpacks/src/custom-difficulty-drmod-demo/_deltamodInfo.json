@@ -1,0 +1,19 @@
+{
+    "metadata": {
+        "name": "Custom Difficulty",
+        "version": "1.5.0",
+        "description": "Difficulty options for DELTARUNE. Make the game Easy, Hard, or Nightmare. No-hit options included.",
+        "author": ["Emmahaha"],
+        "demoMod": true,
+        "packageID": "com.emmahaha.customdiffdemo",
+        "url": "https://gamebanana.com/mods/613308",
+        "tags": ["customization", "gameplay"]
+    },
+    "deltaruneTargetVersion": "1.04",
+    "neededFiles": [
+        {
+            "file": "data.win",
+            "checksum": "4de4118ba4ad4243025e61337fe796532751032c0a04d0843d8b35f91ec2c220"
+        }
+    ]
+}

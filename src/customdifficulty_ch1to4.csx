@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Globalization;
 
 EnsureDataLoaded();
 var displayName = Data?.GeneralInfo?.DisplayName?.Content;
@@ -40,6 +41,97 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
     ThrowOnNoOpFindReplace = true
 };
 
+// Hide TP Gain from the menu to reduce clutter as it's not that useful. Users can still adjust TP Gain from the .ini file if needed.
+readonly bool hide_tpgain = true;
+
+// Define presets
+readonly struct Preset {
+    public Preset () {}
+    // default to values from vanilla Deltarune
+    public readonly float damagemulti { get; init; }   = 1;
+    public readonly float gameboarddmgx { get; init; } = -1;
+    public readonly bool hitall { get; init; }         = false;
+    public readonly float iframes { get; init; }       = 1;
+    public readonly float enemycd { get; init; }       = 1;
+    public readonly float tpgain { get; init; }        = 1;
+    public readonly float battlerewards { get; init; } = 1;
+    public readonly bool rewardranking { get; init; }  = false;
+    public readonly float downdeficit { get; init; }   = 1 / 2f;
+    public readonly float downedregen { get; init; }   = 1 / 8f;
+    public readonly float victoryres { get; init; }    = 1 / 8f;
+}
+const string preset_default = "Normal";
+Dictionary<string, Preset> presets = new Dictionary<string, Preset>();
+presets.Add(
+    "Easy", new Preset {
+        damagemulti   = 0.5f,
+        iframes       = 1.5f
+    });
+presets.Add(
+    preset_default, new Preset { /* Use defaults. */ });
+presets.Add(
+    "Hard", new Preset {
+        damagemulti   = 1.5f,
+        gameboarddmgx = 1.25f,
+        iframes       = 0.8f,
+        enemycd       = 0.8f
+    });
+presets.Add(
+    "Nightmare", new Preset {
+        damagemulti   = 2,
+        gameboarddmgx = 1.5f,
+        iframes       = 0.65f,
+        enemycd       = 0.65f
+    });
+presets.Add(
+    "Nightmare-EX", new Preset {
+        damagemulti   = 3,
+        gameboarddmgx = 2,
+        iframes       = 0.5f,
+        enemycd       = 0.5f
+    });
+presets.Add(
+    "Nightmare-Neo", new Preset {
+        damagemulti   = 3,
+        gameboarddmgx = 2,
+        iframes       = 0.5f,
+        enemycd       = 0.5f,
+        battlerewards = 0.5f,
+        downdeficit   = 1,
+        downedregen   = 0,
+        victoryres    = -1
+    });
+presets.Add(
+    "No-Hit", new Preset {
+        damagemulti   = 2147483647,
+        hitall        = true
+    });
+presets.Add(
+    "Nghtmr-No-Hit", new Preset {
+        damagemulti   = 2147483647,
+        hitall        = true,
+        iframes       = 0.65f,
+        enemycd       = 0.65f
+    });
+presets.Add(
+    "Nghtmr-NH-EX", new Preset {
+        damagemulti   = 2147483647,
+        hitall        = true,
+        iframes       = 0.5f,
+        enemycd       = 0.5f
+    });
+presets.Add(
+    "Nghtmr-NH-Neo", new Preset {
+        damagemulti   = 2147483647,
+        hitall        = true,
+        iframes       = 0.5f,
+        enemycd       = 0.5f,
+        battlerewards = 0.5f,
+        downdeficit   = 1,
+        downedregen   = 0,
+        victoryres    = -1
+    });
+
 // Add globals
 string[] gamestartLikes = {"gml_GlobalScript_scr_gamestart"};
 if (ch_no == 0)
@@ -54,26 +146,44 @@ foreach (string scrName in gamestartLikes)
         {{
             var installed_customdifficulty = true;
 
-            global.diff_resettodefaults = function()
+            global.diff_usepreset = function()
             {{
-                global.diff_damagemulti = 1;
-                {(ch_no != 3 ? "" : @"
-                global.diff_gameboarddmgx = -1;
-                ")}
-                global.diff_hitall = 0;
-                global.diff_iframes = 1;
-                global.diff_tpgain = 1;
-                global.diff_battlerewards = 1;
-                {(ch_no != 3 ? "" : @"
-                global.diff_rewardranking = 0;
-                ")}
-                global.diff_downdeficit = 1 / 2;
-                global.diff_downedregen = 1 / 8;
-                global.diff_victoryres = 1 / 8;
-                global.diff_enemycd = 1;
+                switch (global.diff_preset) {{
+                    {string.Join("\n", presets.Select(pair => @$"
+                        case ""{pair.Key}"":
+                            global.diff_damagemulti = {pair.Value.damagemulti.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_gameboarddmgx = {pair.Value.gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_hitall = {pair.Value.hitall.ToString().ToLower()};
+                            global.diff_iframes = {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_enemycd = {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)};
+                            {(hide_tpgain ? "" : $"global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};")}
+                            global.diff_battlerewards = {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};
+                            global.diff_downdeficit = {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_downedregen = {pair.Value.downedregen.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_victoryres = {pair.Value.victoryres.ToString("F10", CultureInfo.InvariantCulture)};
+                            break;
+                    "))}
+                    case ""Custom"":
+                    default:
+                        // Nothing to do
+                        break;
+                }}
             }}
 
-            global.diff_resettodefaults();
+            global.diff_usepreset_custom = function()
+            {{
+                global.diff_preset = ""Custom"";
+                global.diff_usepreset();
+            }}
+
+            global.diff_usepreset_default = function()
+            {{
+                global.diff_preset = ""{preset_default}"";
+                global.diff_usepreset();
+            }}
+
+            global.diff_usepreset_default();
 
         ");
 }
@@ -106,22 +216,38 @@ foreach (string scrName in loadLikes)
         ossafe_file_text_close{(scrName.EndsWith("_ch1") ? "_ch1" : "")}(myfileid);
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
-        global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", 1);
-        {(ch_no != 3 ? "" : @"
-        global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", -1);
-        ")}
-        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", 0);
-        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", 1);
-        global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", 1);
-        global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", 1);
-        {(ch_no != 3 ? "" : @"
-        global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", 0);
-        ")}
-        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", 1 / 2);
-        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", 1 / 8);
-        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", 1 / 8);
-        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", 1);
+        global.diff_damagemulti = ini_read_real(""DIFFICULTY"", ""DAMAGE_MULTI"", {presets[preset_default].damagemulti.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_gameboarddmgx = ini_read_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", {presets[preset_default].gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", {presets[preset_default].hitall.ToString().ToLower()});
+        global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", {presets[preset_default].iframes.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", {presets[preset_default].enemycd.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", {presets[preset_default].tpgain.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", {presets[preset_default].battlerewards.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", {presets[preset_default].rewardranking.ToString().ToLower()});
+        global.diff_downdeficit = ini_read_real(""DIFFICULTY"", ""DOWN_DEFICIT"", {presets[preset_default].downdeficit.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_downedregen = ini_read_real(""DIFFICULTY"", ""DOWNED_REGEN"", {presets[preset_default].downedregen.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_victoryres = ini_read_real(""DIFFICULTY"", ""VICTORY_RES"", {presets[preset_default].victoryres.ToString("F10", CultureInfo.InvariantCulture)});
         ossafe_ini_close();
+
+        // Determine preset
+        {string.Join(" else ", presets.Select(pair => @$"
+            if (global.diff_damagemulti == {pair.Value.damagemulti.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_gameboarddmgx == {pair.Value.gameboarddmgx.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_hitall == {pair.Value.hitall.ToString().ToLower()}
+                && global.diff_iframes == {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_enemycd == {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_tpgain == {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_battlerewards == {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_rewardranking == {pair.Value.rewardranking.ToString().ToLower()}
+                && global.diff_downdeficit == {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_downedregen == {pair.Value.downedregen.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_victoryres == {pair.Value.victoryres.ToString("F10", CultureInfo.InvariantCulture)}) {{
+                global.diff_preset = ""{pair.Key}"";
+            }}
+        "))}
+        else {{
+            global.diff_preset = ""Custom"";
+        }}
 
         ");
 }
@@ -140,20 +266,16 @@ foreach (string scrName in saveLikes)
 
         ossafe_ini_open(""difficulty_"" + string(global.filechoice) + "".ini"");
         ini_write_real(""DIFFICULTY"", ""DAMAGE_MULTI"", global.diff_damagemulti);
-        {(ch_no != 3 ? "" : @"
         ini_write_real(""DIFFICULTY"", ""GAMEBOARD_DMG_X"", global.diff_gameboarddmgx);
-        ")}
         ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
         ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
+        ini_write_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", global.diff_enemycd);
         ini_write_real(""DIFFICULTY"", ""TP_GAIN"", global.diff_tpgain);
         ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
-        {(ch_no != 3 ? "" : @"
         ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
-        ")}
         ini_write_real(""DIFFICULTY"", ""DOWN_DEFICIT"", global.diff_downdeficit);
         ini_write_real(""DIFFICULTY"", ""DOWNED_REGEN"", global.diff_downedregen);
         ini_write_real(""DIFFICULTY"", ""VICTORY_RES"", global.diff_victoryres);
-        ini_write_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", global.diff_enemycd);
         ossafe_ini_close();
         ");
 }
@@ -175,13 +297,23 @@ foreach (string darkcon in darkcons)
         var menudata = ds_map_create();
         ds_map_add(menudata, ""title_en"", ""Difficulty"");
         ds_map_add(menudata, ""left_margin_en"", 0);
+        ds_map_add(menudata, ""left_value_pos_en"", 240);
 
         var formdata = array_create(0);
+
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Preset"");
+        ds_map_add(rowdata, ""value_range_en"", ""{string.Join(";", presets.Select(pair => @$"{pair.Key.ToUpper()}={pair.Key}`"))};CUSTOM=Custom`"");
+        ds_map_add(rowdata, ""value_name"", ""diff_preset"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset"");
+        ds_map_add(rowdata, ""force_scroll"", true);
+        array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Damage Multi"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%;INF=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_damagemulti"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
         {(ch_no != 3 ? "" : @"
@@ -189,38 +321,53 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""title_en"", ""Gameboard Dmg X"");
         ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0-1000%;INF=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_gameboarddmgx"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
         ")}
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Hit.All"");
-        ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+        ds_map_add(rowdata, ""value_range_en"", ""OFF=false;ON=true"");
         ds_map_add(rowdata, ""value_name"", ""diff_hitall"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""I-Frames"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_iframes"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Enemy Cooldowns"");
+        ds_map_add(rowdata, ""value_range_en"", ""0~200%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
+        array_push(formdata, rowdata);
+
+        {(hide_tpgain ? "" : @"
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""TP Gain"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_tpgain"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
+        ")}
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Battle Rewards"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%"");
         ds_map_add(rowdata, ""value_name"", ""diff_battlerewards"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
         {(ch_no != 3 ? "" : @"
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Reward Ranking"");
-        ds_map_add(rowdata, ""value_range_en"", ""OFF=0;ON=1"");
+        ds_map_add(rowdata, ""value_range_en"", ""OFF=false;ON=true"");
         ds_map_add(rowdata, ""value_name"", ""diff_rewardranking"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
         ")}
 
@@ -228,29 +375,26 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""title_en"", ""Down Deficit"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%;[-999]=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_downdeficit"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Downed Regen"");
         ds_map_add(rowdata, ""value_range_en"", ""0~1000%;INSTANT=2147483647"");
         ds_map_add(rowdata, ""value_name"", ""diff_downedregen"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Victory Res"");
         ds_map_add(rowdata, ""value_range_en"", ""OFF=-1;0~100%"");
         ds_map_add(rowdata, ""value_name"", ""diff_victoryres"");
-        array_push(formdata, rowdata);
-
-        var rowdata = ds_map_create();
-        ds_map_add(rowdata, ""title_en"", ""Experiment: Enemy CDs"");
-        ds_map_add(rowdata, ""value_range_en"", ""0~200%"");
-        ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Reset to Defaults"");
-        ds_map_add(rowdata, ""func_name"", ""diff_resettodefaults"");
+        ds_map_add(rowdata, ""func_name"", ""diff_usepreset_default"");
         array_push(formdata, rowdata);
 
         ds_map_add(menudata, ""form"", formdata);
@@ -746,14 +890,20 @@ importGroup = new(Data){
 };
 
 // Enemy Cooldowns
-string[] bulletCons = {"gml_Object_obj_dbulletcontroller", };
+string one_over_cd = "(global.diff_enemycd <= 0 ? 1 : (1/global.diff_enemycd))";
+string one_over_cd_2 = "(global.diff_enemycd <= 0 ? 1 : (1/(global.diff_enemycd*global.diff_enemycd)))"; // TODO remove if unused
+// some attacks rely on the heart existing so have it fly out onto the box sooner
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = min(8, global.diff_enemycd * 8)");
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Step_0", "image_alpha += 0.334;", $"image_alpha += max(0.334, {one_over_cd} * 0.334)");
+
+string[] bulletCons = {"gml_Object_obj_dbulletcontroller"};
 if (ch_no == 0) {
-    string[] demoBulletCons = {"gml_Object_obj_lancerbike_ch1", "gml_Object_obj_dbulletcontroller_ch1", "gml_Object_obj_chain_of_hell_ch1", "gml_Object_obj_wavechain_ch1",
+    string[] demoBulletCons = {"gml_Object_obj_lancerbike_ch1", "gml_Object_obj_dbulletcontroller_ch1", "gml_Object_obj_chain_of_hell_ch1",
     "gml_Object_obj_finalchain_ch1", "gml_Object_obj_king_boss_ch1"};
     bulletCons = bulletCons.Concat(demoBulletCons).ToArray();
 }
 if (ch_no == 1) {
-    string[] ch1BulletCons = {"gml_Object_obj_chain_of_hell", "gml_Object_obj_finalchain", "gml_Object_obj_wavechain", "gml_Object_obj_king_boss"};
+    string[] ch1BulletCons = {"gml_Object_obj_chain_of_hell", "gml_Object_obj_finalchain", "gml_Object_obj_king_boss"};
     bulletCons = bulletCons.Concat(ch1BulletCons).ToArray();
 }
 if (ch_no >= 0 && ch_no <= 2) {
@@ -842,6 +992,20 @@ foreach (string con in bulletCons)
         importGroup.QueueFindReplace(con + "_Step_0", $"btimer == {term}", $"btimer == ceil(global.diff_enemycd * ({term}))");
     }
 }
+if (ch_no == 1) {
+    // TODO and demo
+    // Reduce randomness for lower cooldowns as heart shaper can trap you.
+    importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(obj_battlesolid.x - 50) + random(100)",
+        "(obj_battlesolid.x - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+    importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(obj_battlesolid.y - 50) + random(100)",
+        "(obj_battlesolid.y - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+
+    // King's wave chain spades become undodgeable below a certain value.
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 20", "btimer >= max(12, global.diff_enemycd * 20)");
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 18", "btimer >= max(12, global.diff_enemycd * 18)");
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 16", "btimer >= max(12, global.diff_enemycd * 16)");
+    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 14", "btimer >= max(12, global.diff_enemycd * 14)");
+}
 string[] dojoCons = {"gml_Object_obj_dbullet_maker"};
 if (ch_no == 0) {
     string[] demoDojoCons = {"gml_Object_obj_dbullet_maker_ch1"};
@@ -870,9 +1034,73 @@ foreach (string con in dojoCons)
     importGroup.QueueFindReplace(con + "_Draw_0", "activetimer == timetarg", "activetimer == ceil(global.diff_enemycd * timetarg)");
     importGroup.QueueFindReplace(con + "_Step_0", "activetimer == 4", "activetimer == ceil(global.diff_enemycd * 4)");
 }
+if (ch_no == 1) {
+    // TODO and demo
+    // include Lancer overworld attacks
+    importGroup.QueueFindReplace("gml_Object_obj_overworld_spademaker_Create_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_overworld_spademaker_Alarm_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
+
+    // include K.Round leap attacks
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "jumptimer >= ", "jumptimer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer >= ", "s_timer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer == 20", "s_timer == ceil(global.diff_enemycd * 20)");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "image_xscale += ", $"image_xscale += {one_over_cd} * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "image_yscale += ", $"image_yscale += {one_over_cd} * ");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "jumptimer = 10", "jumptimer = floor(global.diff_enemycd * (10))");
+    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer = 21", "s_timer = floor(global.diff_enemycd * (21))");
+
+    // include star bird's overworld attacks
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer >= ", "attacktimer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer = 36", "attacktimer = floor(global.diff_enemycd * (36))");
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer = 38", "attacktimer = floor(global.diff_enemycd * (38))");
+    // fix star bullets dissappearing too soon
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "if (shot == 1)", "if (false && shot == 1)");
+    importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Create_0", "trackstarbullet = array_create(0);");
+    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "starbullet[i].depth = 1000;", @"
+        starbullet[i].depth = 1000;
+        array_push(trackstarbullet, starbullet[i]);
+    ");
+    importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Step_0", @"
+        var newtrackstarbullet = array_create(0);
+        var cam = view_camera[0];
+        var x1 = camera_get_view_x(cam);
+        var y1 = camera_get_view_y(cam);
+        var x2 = x1 + camera_get_view_width(cam);
+        var y2 = y1 + camera_get_view_height(cam);
+        for (var i = 0; i < array_length(trackstarbullet); i++) {
+            with (trackstarbullet[i]) {
+                if(!point_in_rectangle( x, y, x1, y1, x2, y2))
+                    instance_destroy();
+                else
+                    array_push(newtrackstarbullet, self);
+            }
+        }
+        trackstarbullet = newtrackstarbullet;
+    ");
+
+    // King's chain of hell could trap you, shorten chain length sooner
+    importGroup.QueueFindReplace("gml_Object_obj_chain_of_hell_Step_0", "bullettimer >= 30", "bullettimer >= min(30, global.diff_enemycd * 30)");
+
+    // include box drag chain's time to decide next path
+    importGroup.QueueFindReplace("gml_Object_obj_finalchain_Step_0", "gotimer >= ", "gotimer >= global.diff_enemycd * ");
+
+    // TODO jevil
+}
+if (ch_no == 2) {
+    // TODO and demo
+    // include hangplugs
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer = ", "timer = global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer -= ", "timer -= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timerb == timerbtarget", "timerb == ceil(global.diff_enemycd * timerbtarget)");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timer >= ", "timer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timer = ", "timer = global.diff_enemycd * ");
+
+    // TODO shoottimer
+    // TODO hangsparktimer
+}
 
 // Finish edit
-// utmt keeps throwing out exceptions for gml compile errors w\ swatchling(ch2&demo)&sneo(demo) but on inspection nothing looks wrong and utmt saves changes without issue
+// utmt keeps throwing out exceptions for gml compile errors w\ swatchling(ch2&demo)&sneo(demo)&laserattack(ch1) but on inspection nothing looks wrong and utmt saves changes without issue
     // seems to be inconsistent issue with utmt - exceptions appeared and dissappeared after completely irrelevant changes
-importGroup.Import(ch_no == 2 || ch_no == 0 ? false : true);
+importGroup.Import(false);
 ScriptMessage($"Success: Custom difficulty added to '{displayName}'!");
