@@ -1089,14 +1089,85 @@ if (ch_no == 1) {
 if (ch_no == 2) {
     // TODO and demo
     // include hangplugs
-    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer = ", "timer = global.diff_enemycd * ");
+    importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer = 130 + random(20)", "timer = floor(global.diff_enemycd * (130 + random(20)))");
     importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer -= ", "timer -= global.diff_enemycd * ");
     importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timerb == timerbtarget", "timerb == ceil(global.diff_enemycd * timerbtarget)");
     importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timer >= ", "timer >= global.diff_enemycd * ");
     importGroup.QueueFindReplace("gml_Object_obj_hangplug_Step_0", "timer = ", "timer = global.diff_enemycd * ");
 
-    // TODO shoottimer
-    // TODO hangsparktimer
+    // include shoottimer guys: Spamton, Queen, Were(were)wire, Sweet Cap'n Cakes
+    string[] shooterGuys = {"gml_Object_obj_sneo_crusher_chase_Create_0", "gml_Object_obj_sneo_crusher_chase_Step_0", "gml_Object_obj_werewire_enemy_Create_0", "gml_Object_obj_werewire_enemy_Step_0",
+        "gml_Object_obj_werewerewire_enemy_Create_0", "gml_Object_obj_werewerewire_enemy_Step_0", "gml_Object_obj_queen_search_gun_Create_0", "gml_Object_obj_queen_search_gun_Step_0",
+        "gml_Object_obj_sneo_heartattack_Create_0", "gml_Object_obj_sneo_heartattack_Alarm_0", "gml_Object_obj_sneo_heartattack_Step_0", "gml_Object_obj_sneo_heartattack_old_Create_0",
+        "gml_Object_obj_sneo_heartattack_old_Step_0", "gml_Object_obj_musicenemy_dancer_Create_0", "gml_Object_obj_musicenemy_dancer_Draw_0", "gml_Object_obj_musicenemy_dancer_end_Create_0",
+        "gml_Object_obj_musicenemy_dancer_end_Draw_0"};
+    string[] shoottimerEquals = {"29", "10 / m", "20", "-10", "-headimage * 4"};
+    string[] shoottimerEqualEquals = {"obj_spamton_neo_enemy.heart_1st_wave_timer", "obj_spamton_neo_enemy.heart_2nd_wave_timer", "obj_spamton_neo_enemy.heart_3rd_wave_timer", "2", "4", "6"};
+    foreach (string scr in shooterGuys)
+    {
+        foreach (string term in shoottimerEquals)
+        {
+            importGroup.QueueFindReplace(scr, $"shoottimer = {term}", $"shoottimer = floor(global.diff_enemycd * ({term}))");
+        }
+
+        importGroup.QueueFindReplace(scr, "shoottimer < ", "shoottimer < global.diff_enemycd * ");
+        importGroup.QueueFindReplace(scr, "shoottimer > ", "shoottimer > global.diff_enemycd * ");
+        importGroup.QueueFindReplace(scr, "shoottimer <= ", "shoottimer <= global.diff_enemycd * ");
+        importGroup.QueueFindReplace(scr, "shoottimer >= ", "shoottimer >= global.diff_enemycd * ");
+        foreach (string term in shoottimerEqualEquals)
+        {
+            importGroup.QueueFindReplace(scr, $"shoottimer == {term}", $"shoottimer == ceil(global.diff_enemycd * ({term}))");
+        }
+    }
+
+    // include hanging spark shooters: Were(were)wire and Berdly (Queen fight)
+    string[] hangSparkers = {"gml_Object_obj_werewire_enemy_Step_0", "gml_Object_obj_werewerewire_enemy_Step_0", "gml_Object_obj_queen_berdlywireattack_Step_0"};
+    foreach (string scr in hangSparkers)
+    {
+        importGroup.QueueFindReplace(scr, "shoottimer >= ", "shoottimer >= global.diff_enemycd * ");
+    }
+
+    // include Sweet Cap'n Cakes' Boombox
+    importGroup.QueueFindReplace("gml_Object_obj_musicenemy_boombox_Create_0", "makelongtimer = 9", "makelongtimer = floor(global.diff_enemycd * 9)");
+    importGroup.QueueFindReplace("gml_Object_obj_musicenemy_boombox_Step_0", "makelongtimer >= ", "makelongtimer >= global.diff_enemycd * ");
+
+    // prevent spamton jumper attack from trapping you at 50%, still goes full spam at lower cods
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_attack_mode_Step_0", "(global.diff_enemycd * firingspeed) && attack < 2", "(power(global.diff_enemycd, 0.5) * firingspeed) && attack < 2");
+
+    // include Berdly's tornados (Queen fight), prevent it from trapping you at 50%
+    importGroup.QueueFindReplace("gml_Object_obj_berdly_tornadomaker_Step_0", "timer >= ", "timer >= power(global.diff_enemycd, 0.5) * ");
+
+    // these legs gotta wait their turn
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "if (stomplocation[0] == 1 && stomplocation[1] == 1 && stomplocation[2] == 1)", @"
+        var waitDont = false;
+
+        if (instance_number(obj_queen_leg) >= 3)
+            waitDont = true;
+
+        if (stomplocation[0] == 1 && stomplocation[1] == 1 && stomplocation[2] == 1)
+    ");
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "if (chooselocation == 0)", "if (!waitDont && chooselocation == 0)");
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "if (chooselocation == 1)", "if (!waitDont && chooselocation == 1)");
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "if (chooselocation == 2)", "if (!waitDont && chooselocation == 2)");
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "d.pos = chooselocation;", @"
+        if (!waitDont)
+            d.pos = chooselocation;
+    ");
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "d.shootbullets = 1;", @"
+        if (!waitDont)
+            d.shootbullets = 1;
+    ");
+    importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "btimer = floor(global.diff_enemycd * 9);", @"
+        if (!waitDont)
+            btimer = floor(global.diff_enemycd * 9);
+    ");
+
+    // remove lasers sooner as they can trap you
+    importGroup.QueueFindReplace("gml_Object_obj_queen_laser_Step_0", "image_alpha -= 0.2", "image_alpha -= global.diff_enemycd * 0.2");
+
+    // TODO blue spamton heads (fix)
+    // TODO spamton mail walls (fix)
+    // TODO blue spamton heart (fix)
 }
 
 // Finish edit
