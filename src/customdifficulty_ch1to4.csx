@@ -74,30 +74,29 @@ presets.Add(
         damagemulti   = 1.5f,
         gameboarddmgx = 1.25f,
         iframes       = 0.8f,
-        enemycd       = 0.8f
+        enemycd       = 0.9f
     });
 presets.Add(
     "Nightmare", new Preset {
         damagemulti   = 2,
         gameboarddmgx = 1.5f,
         iframes       = 0.65f,
-        enemycd       = 0.65f
+        enemycd       = 0.8f
     });
 presets.Add(
     "Nightmare-EX", new Preset {
         damagemulti   = 3,
         gameboarddmgx = 2,
         iframes       = 0.5f,
-        enemycd       = 0.5f
+        enemycd       = 0.7f
     });
 presets.Add(
     "Nightmare-Neo", new Preset {
         damagemulti   = 3,
         gameboarddmgx = 2,
         iframes       = 0.5f,
-        enemycd       = 0.5f,
+        enemycd       = 0.7f,
         battlerewards = 0.5f,
-        downdeficit   = 1,
         downedregen   = 0,
         victoryres    = -1
     });
@@ -105,31 +104,6 @@ presets.Add(
     "No-Hit", new Preset {
         damagemulti   = 2147483647,
         hitall        = true
-    });
-presets.Add(
-    "Nghtmr-No-Hit", new Preset {
-        damagemulti   = 2147483647,
-        hitall        = true,
-        iframes       = 0.65f,
-        enemycd       = 0.65f
-    });
-presets.Add(
-    "Nghtmr-NH-EX", new Preset {
-        damagemulti   = 2147483647,
-        hitall        = true,
-        iframes       = 0.5f,
-        enemycd       = 0.5f
-    });
-presets.Add(
-    "Nghtmr-NH-Neo", new Preset {
-        damagemulti   = 2147483647,
-        hitall        = true,
-        iframes       = 0.5f,
-        enemycd       = 0.5f,
-        battlerewards = 0.5f,
-        downdeficit   = 1,
-        downedregen   = 0,
-        victoryres    = -1
     });
 
 // Add globals
@@ -1083,8 +1057,6 @@ if (ch_no == 1) {
 
     // include box drag chain's time to decide next path
     importGroup.QueueFindReplace("gml_Object_obj_finalchain_Step_0", "gotimer >= ", "gotimer >= global.diff_enemycd * ");
-
-    // TODO jevil
 }
 if (ch_no == 2) {
     // TODO and demo
@@ -1131,12 +1103,6 @@ if (ch_no == 2) {
     importGroup.QueueFindReplace("gml_Object_obj_musicenemy_boombox_Create_0", "makelongtimer = 9", "makelongtimer = floor(global.diff_enemycd * 9)");
     importGroup.QueueFindReplace("gml_Object_obj_musicenemy_boombox_Step_0", "makelongtimer >= ", "makelongtimer >= global.diff_enemycd * ");
 
-    // prevent spamton jumper attack from trapping you at 50%, still goes full spam at lower cods
-    importGroup.QueueFindReplace("gml_Object_obj_spamton_attack_mode_Step_0", "(global.diff_enemycd * firingspeed) && attack < 2", "(power(global.diff_enemycd, 0.5) * firingspeed) && attack < 2");
-
-    // include Berdly's tornados (Queen fight), prevent it from trapping you at 50%
-    importGroup.QueueFindReplace("gml_Object_obj_berdly_tornadomaker_Step_0", "timer >= ", "timer >= power(global.diff_enemycd, 0.5) * ");
-
     // these legs gotta wait their turn
     importGroup.QueueFindReplace("gml_Object_obj_queen_bulletcontroller_Step_0", "if (stomplocation[0] == 1 && stomplocation[1] == 1 && stomplocation[2] == 1)", @"
         var waitDont = false;
@@ -1161,9 +1127,6 @@ if (ch_no == 2) {
         if (!waitDont)
             btimer = floor(global.diff_enemycd * 9);
     ");
-
-    // remove lasers sooner as they can trap you
-    importGroup.QueueFindReplace("gml_Object_obj_queen_laser_Step_0", "image_alpha -= 0.2", "image_alpha -= global.diff_enemycd * 0.2");
 
     // TODO blue spamton heads (fix)
     // TODO spamton mail walls (fix)
