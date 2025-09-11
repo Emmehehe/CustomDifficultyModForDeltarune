@@ -85,15 +85,15 @@ presets.Add(
     });
 presets.Add(
     "Nightmare-EX", new Preset {
-        damagemulti   = 3,
-        gameboarddmgx = 2,
+        damagemulti   = 2.5f,
+        gameboarddmgx = 1.75f,
         iframes       = 0.5f,
         enemycd       = 0.7f
     });
 presets.Add(
     "Nightmare-Neo", new Preset {
-        damagemulti   = 3,
-        gameboarddmgx = 2,
+        damagemulti   = 2.5f,
+        gameboarddmgx = 1.75f,
         iframes       = 0.5f,
         enemycd       = 0.7f,
         battlerewards = 0.5f,
@@ -1131,9 +1131,70 @@ if (ch_no == 2) {
             btimer = floor(global.diff_enemycd * 9);
     ");
 
-    // TODO blue spamton heads (fix)
-    // TODO spamton mail walls (fix)
-    // TODO blue spamton heart (fix)
+    // include Spamton Neo blue heads
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_guymaker_Step_0", "timer >= ", "timer >= global.diff_enemycd * ");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_guymaker_Step_0", "timer == ([0-9]+)", "timer == ceil(global.diff_enemycd * ($1))");
+
+    // include Spamton Neo walls of mail
+    string[] wallCons = {"gml_Object_obj_sneo_wall_controller_new_Create_0", "gml_Object_obj_sneo_wall_controller_new_Step_0", "gml_Object_obj_sneo_wall_controller_Create_0",
+        "gml_Object_obj_sneo_wall_controller_Alarm_0", "gml_Object_obj_sneo_wall_controller_Step_0", "gml_Object_obj_sneo_wall_controller_Other_10"};
+    foreach (string scrName in wallCons) {
+        importGroup.QueueFindReplace(scrName, "timer >= ", "timer >= global.diff_enemycd * ");
+        importGroup.QueueFindReplace(scrName, "timer -= ", "timer -= global.diff_enemycd * ");
+        importGroup.QueueRegexFindReplace(scrName, "timer = ([^;]+)", "timer = floor(global.diff_enemycd * ($1))");
+        importGroup.QueueRegexFindReplace(scrName, "timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
+        importGroup.QueueFindReplace(scrName, "timer == wallcreatetimer[wallcount]", "timer == ceil(global.diff_enemycd * (wallcreatetimer[wallcount]))");
+        // TODO why won't this $@#! attack loop? (not too noticeable at 70%)
+        // importGroup.QueueFindReplace(scrName, "wallcount < wallcountmax", "wallcount < (wallcountmax / global.diff_enemycd)");
+        // importGroup.QueueFindReplace(scrName, "made < spawncount", "made < (spawncount / global.diff_enemycd)");
+    }
+
+    // include Spamton Neo wire heart
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_wireheart_Draw_0", "(?<!_|damage|turn)timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_wireheart_Step_0", "(?<!_|damage|turn)timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_wireheart_Step_0", "(?<!_|damage|turn)timer <(=?) ([0-9|\\.]+)", "timer <$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_wireheart_Step_0", "(?<!_|damage|turn)timer = ([^;]+)", "timer = floor(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_wireheart_Step_0", "(?<!_|damage|turn)timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_wireheart_Step_0", "movetimer / 21", "movetimer / (global.diff_enemycd * 21)");
+
+    // include Spamton Neo face attack
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_faceattack_Step_0", "(?<!_|explode|turn|shootflash)timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_faceattack_Step_0", "(?<!_|explode|turn|shootflash)timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_faceattack_Step_0", "(?<!_|explode|turn|shootflash)timer = ([^;]+)", "timer = floor(global.diff_enemycd * ($1))");
+    // fix attack patterns getting cutoff
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_faceattack_Step_0", "timer == ceil(global.diff_enemycd * 50)", "timer == (ceil(global.diff_enemycd * 30) + 20)");
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_faceattack_Step_0", "timer == ceil(global.diff_enemycd * 90)", "timer == (ceil(global.diff_enemycd * 80) + 10)");
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_faceattack_Step_0", "timer == ceil(global.diff_enemycd * 42)", "timer == (ceil(global.diff_enemycd * 10) + 32)");
+
+    // include Spamton Neo phonecall attack
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_bulletcontroller_Step_0", "atimer == ([0-9|\\.]+)", "atimer == ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_bulletcontroller_Step_0", "atimer >(=?) ([0-9|\\.]+)", "atimer >$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_sneo_bulletcontroller_Step_0", "atimer <(=?) ([0-9|\\.]+)", "atimer <$1 global.diff_enemycd * ($2)");
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_bulletcontroller_Step_0", "min(10, atimer) / 10", "min(10, atimer) / (global.diff_enemycd * 10)");
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_bulletcontroller_Step_0", "atimer / 20", "atimer / (global.diff_enemycd * 20)");
+    importGroup.QueueFindReplace("gml_Object_obj_sneo_bulletcontroller_Step_0", "atimer >= threshold", "atimer >= global.diff_enemycd * threshold");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_pipis_controller_Draw_0", "(?<!_|move|turn)timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_pipis_controller_Draw_0", "(?<!_|move|turn)timer <(=?) ([0-9|\\.]+)", "timer <$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_pipis_controller_Draw_0", "(?<!_|move|turn)timer / 10", "timer / (global.diff_enemycd * 10)");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer < (timervariance - 15)", "timer < (global.diff_enemycd * (timervariance - 15))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_pipis_controller_Draw_0", "(?<!_|move|turn)timer / (timervariance - 15)", "timer / (global.diff_enemycd * (timervariance - 15))");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer == (timervariance - 15)", "timer == ceil(global.diff_enemycd * (timervariance - 15))");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer >= timervariance", "timer >= global.diff_enemycd * timervariance");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer = -40", "timer = floor(global.diff_enemycd * -40)");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer2 == 40", "timer2 == ceil(global.diff_enemycd * 40)");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer2 >= 50", "timer2 >= global.diff_enemycd * 50");
+    importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer3 == 150", "timer3 == ceil(global.diff_enemycd * 150)");
+    // TODO why won't this $@#! attack loop? (not too noticeable at 70%)
+    // importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "pipiscount >= maxpipis", "pipiscount >= (maxpipis / global.diff_enemycd)");
+
+    // include Spamton Neo big shots
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (17 - (fastshot * 10))", "dance_timer == ceil(global.diff_enemycd * (17 - (fastshot * 10)))");
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (52 - (fastshot * 10))", "dance_timer == ceil(global.diff_enemycd * (52 - (fastshot * 10)))");
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (42 - (fastshot * 10))", "dance_timer == ceil(global.diff_enemycd * (42 - (fastshot * 10)))");
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (84 - (fastshot * 20))", "dance_timer == ceil(global.diff_enemycd * (84 - (fastshot * 20)))");
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (85 - (fastshot * 20))", "dance_timer == ceil(global.diff_enemycd * (85 - (fastshot * 20)))");
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer > 9", "dance_timer > global.diff_enemycd * 9");
+    importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer = 3", "dance_timer = floor(global.diff_enemycd * 3)");
 }
 
 // Finish edit
