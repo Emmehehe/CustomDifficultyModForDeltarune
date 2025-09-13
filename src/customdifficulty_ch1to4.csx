@@ -53,6 +53,7 @@ readonly struct Preset {
     public readonly bool hitall { get; init; }         = false;
     public readonly float iframes { get; init; }       = 1;
     public readonly float enemycd { get; init; }       = 1;
+    public readonly float gmbrdenemycd { get; init; }       = -1;
     public readonly float tpgain { get; init; }        = 1;
     public readonly float battlerewards { get; init; } = 1;
     public readonly bool rewardranking { get; init; }  = false;
@@ -130,6 +131,7 @@ foreach (string scrName in gamestartLikes)
                             global.diff_hitall = {pair.Value.hitall.ToString().ToLower()};
                             global.diff_iframes = {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_enemycd = {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)};
+                            global.diff_gmbrdenemycd = {pair.Value.gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)};
                             {(hide_tpgain ? "" : $"global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};")}
                             global.diff_battlerewards = {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};
@@ -195,6 +197,7 @@ foreach (string scrName in loadLikes)
         global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", {presets[preset_default].hitall.ToString().ToLower()});
         global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", {presets[preset_default].iframes.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", {presets[preset_default].enemycd.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""GMBRD_ENEMY_CDS"", {presets[preset_default].gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", {presets[preset_default].tpgain.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", {presets[preset_default].battlerewards.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", {presets[preset_default].rewardranking.ToString().ToLower()});
@@ -210,6 +213,7 @@ foreach (string scrName in loadLikes)
                 && global.diff_hitall == {pair.Value.hitall.ToString().ToLower()}
                 && global.diff_iframes == {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_enemycd == {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)}
+                && global.diff_gmbrdenemycd == {pair.Value.gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_tpgain == {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_battlerewards == {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)}
                 && global.diff_rewardranking == {pair.Value.rewardranking.ToString().ToLower()}
@@ -244,6 +248,7 @@ foreach (string scrName in saveLikes)
         ini_write_real(""DIFFICULTY"", ""HIT_ALL"", global.diff_hitall);
         ini_write_real(""DIFFICULTY"", ""I_FRAMES"", global.diff_iframes);
         ini_write_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", global.diff_enemycd);
+        ini_write_real(""DIFFICULTY"", ""GMBRD_ENEMY_CDS"", global.diff_gmbrdenemycd);
         ini_write_real(""DIFFICULTY"", ""TP_GAIN"", global.diff_tpgain);
         ini_write_real(""DIFFICULTY"", ""BATTLE_REWARDS"", global.diff_battlerewards);
         ini_write_real(""DIFFICULTY"", ""REWARD_RANKING"", global.diff_rewardranking);
@@ -319,6 +324,15 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
         ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
+
+        {(ch_no != 3 ? "" : @"
+        var rowdata = ds_map_create();
+        ds_map_add(rowdata, ""title_en"", ""Gmbrd Enemy CDs"");
+        ds_map_add(rowdata, ""value_range_en"", ""INHERIT=-1;0~200%"");
+        ds_map_add(rowdata, ""value_name"", ""diff_gmbrdenemycd"");
+        ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
+        array_push(formdata, rowdata);
+        ")}
 
         {(hide_tpgain ? "" : @"
         var rowdata = ds_map_create();
@@ -497,22 +511,22 @@ if (ch_no == 4)
     ");
 }
 
-// Apply BattleBoard damage multiplier
+// Apply Game Board damage multiplier
 if (ch_no == 3)
 {
-    const string batboarddmgmulti = "(global.diff_gameboarddmgx < 0 ? global.diff_damagemulti : global.diff_gameboarddmgx)";
+    const string gameboarddmgmulti = "(global.diff_gameboarddmgx < 0 ? global.diff_damagemulti : global.diff_gameboarddmgx)";
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_board_puzzlebombbullet_Step_0", "myhealth -= other.damage;",
-        $"myhealth -= other.damage * {batboarddmgmulti};");
+        $"myhealth -= other.damage * {gameboarddmgmulti};");
     importGroup.QueueFindReplace("gml_Object_obj_quizsequence_Draw_0", "myhealth -= 2;",
-        $"myhealth -= 2 * {batboarddmgmulti};");
+        $"myhealth -= 2 * {gameboarddmgmulti};");
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_b1rocks2_Step_0", "ralsei.myhealth -= 1;",
-        $"ralsei.myhealth = max(1, ralsei.myhealth - {batboarddmgmulti});");
+        $"ralsei.myhealth = max(1, ralsei.myhealth - {gameboarddmgmulti});");
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_mainchara_board_Step_0", "myhealth -= hazard.damage;",
-        $"myhealth -= hazard.damage * {batboarddmgmulti};");
+        $"myhealth -= hazard.damage * {gameboarddmgmulti};");
     string[] hangInThereRalsei = {"gml_Object_obj_b1rocks1_Step_0", "gml_Object_obj_b1lancer_Step_0", "gml_Object_obj_b3bridge_Step_0", "gml_Object_obj_b1power_Step_0"};
     foreach (string scrName in hangInThereRalsei)
     {   
-        importGroup.QueueTrimmedLinesFindReplace(scrName, "myhealth--;", $"myhealth = max(1, myhealth - {batboarddmgmulti});");
+        importGroup.QueueTrimmedLinesFindReplace(scrName, "myhealth--;", $"myhealth = max(1, myhealth - {gameboarddmgmulti});");
     }
     // fix health item not working between 0 and 1
     importGroup.QueueTrimmedLinesFindReplace("gml_Object_obj_board_heal_pickup_Step_0", "if (obj_board_controller.kris_object.myhealth < 1)",
@@ -1195,6 +1209,59 @@ if (ch_no == 2) {
     importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (85 - (fastshot * 20))", "dance_timer == ceil(global.diff_enemycd * (85 - (fastshot * 20)))");
     importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer > 9", "dance_timer > global.diff_enemycd * 9");
     importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer = 3", "dance_timer = floor(global.diff_enemycd * 3)");
+}
+if (ch_no == 3) {
+    // include shadowman tommy gun
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadowman_tommygun_Step_0", "(?<!turn)timer <(=?) ([0-9|\\.]+)", "timer <$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadowman_tommygun_Step_0", "(?<!_|turn)timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadowman_tommygun_Step_0", "bullet_timer (\\+?-?)= ([^;]+)", "bullet_timer $1= floor(global.diff_enemycd * ($2))");
+
+    // include Lanino & Elnina
+    importGroup.QueueFindReplace("gml_Object_obj_elnina_mascotattack_Step_0", "shottimer[i] >= shotrate[i]", "shottimer[i] >= global.diff_enemycd * shotrate[i]");
+
+    // include water cooler
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadowman_tommygun_Step_0", "(?<!turn|regraze)timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
+    // TODO doesn't work :(
+}
+
+// Apply Game Board Enemy Cooldowns
+if (ch_no == 3)
+{
+    const string gmbrdenemycd = "(global.diff_gmbrdenemycd < 0 ? global.diff_enemycd : global.diff_gmbrdenemycd)";
+    // basic enemies
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_bluebird_Step_0", "bulletimer == (-?[0-9|\\.]+)", $"bulletimer == ceil({gmbrdenemycd} * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_bluebird_Step_0", "bulletimer (\\+?-?)= ([^;]+)", $"bullettimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_yellowflower_Create_0", "bubbletimer (\\+?-?)= ([^;]+)", $"bubbletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_yellowflower_Step_0", "bubbletimer == (-?[0-9|\\.]+)", $"bubbletimer == ceil({gmbrdenemycd} * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_yellowflower_Step_0", "bubbletimer >(=?) (-?[0-9|\\.]+)", $"bubbletimer >$1 {gmbrdenemycd} * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_yellowflower_Step_0", "bubbletimer (\\+?-?)= ([^;]+)", $"bubbletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_yellowflower_Other_22", "bubbletimer (\\+?-?)= ([^;]+)", $"bubbletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_offscreenevent_Step_0", "timer == (-?[0-9|\\.]+)", $"timer == ceil({gmbrdenemycd} * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_offscreenevent_Step_0", "timer (\\+?-?)= ([^;]+)", $"timer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_lizard_Create_0", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_lizard_Step_0", "bulletimer >(=?) (-?[0-9|\\.]+)", $"bulletimer >$1 {gmbrdenemycd} * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_lizard_Step_0", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_lizard_Other_22", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_singingcat_Step_0", "bubbletimer == (-?[0-9|\\.]+)", $"bubbletimer == ceil({gmbrdenemycd} * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_singingcat_Step_0", "bubbletimer >(=?) (-?[0-9|\\.]+)", $"bubbletimer >$1 {gmbrdenemycd} * ($2)");
+    importGroup.QueueFindReplace("gml_Object_obj_board_enemy_silentcat_Step_0", "waketimer == 7", $"waketimer == ceil({gmbrdenemycd} * 7)");
+    importGroup.QueueFindReplace("gml_Object_obj_board_enemy_silentcat_Step_0", "waketimer == 8", $"waketimer == ceil({gmbrdenemycd} * 7) + 1");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_flower_Step_0", "timer == (-?[0-9|\\.]+)", $"timer == ceil({gmbrdenemycd} * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_flower_Step_0", "timer (\\+?-?)= ([^;]+)", $"timer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Create_0", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueFindReplace("gml_Object_obj_board_enemy_monster_Step_0", "bulletimer > shoot_wait_time", $"bulletimer > ({gmbrdenemycd} * shoot_wait_time)");
+    importGroup.QueueFindReplace("gml_Object_obj_board_enemy_monster_Step_0", "bulletimer <= shoot_wait_time", $"bulletimer <= ({gmbrdenemycd} * shoot_wait_time)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Step_0", "bulletimer >(=?) (-?[0-9|\\.]+)", $"bulletimer >$1 {gmbrdenemycd} * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Step_0", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Other_22", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
+    // John Mantleholder / Nightmare
+    importGroup.QueueFindReplace("gml_Object_obj_shadow_mantle_enemy_Create_0", "attacktimer = 10", $"attacktimer = floor({gmbrdenemycd} * 10)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=attack|burstwave|spawnenemies|flamewave|dash)timer (\\+?-?)= ([^;]+)",
+        $"timer $1= floor({gmbrdenemycd} * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=attack|burstwave|spawnenemies|flamewave|dash)timer >(=?) (-?[0-9|\\.]+)",
+        $"timer >$1 {gmbrdenemycd} * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=attack|burstwave|spawnenemies|flamewave|dash)timer == (-?[0-9|\\.]+)",
+        $"timer == ceil({gmbrdenemycd} * ($1))");
 }
 
 // Finish edit
