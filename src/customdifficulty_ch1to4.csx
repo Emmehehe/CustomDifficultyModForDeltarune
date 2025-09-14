@@ -53,7 +53,7 @@ readonly struct Preset {
     public readonly bool hitall { get; init; }         = false;
     public readonly float iframes { get; init; }       = 1;
     public readonly float enemycd { get; init; }       = 1;
-    public readonly float gmbrdenemycd { get; init; }       = -1;
+    public readonly float gmbrdenemycd { get; init; }  = -1;
     public readonly float tpgain { get; init; }        = 1;
     public readonly float battlerewards { get; init; } = 1;
     public readonly bool rewardranking { get; init; }  = false;
@@ -75,21 +75,24 @@ presets.Add(
         damagemulti   = 1.5f,
         gameboarddmgx = 1.25f,
         iframes       = 0.8f,
-        enemycd       = 0.9f
+        enemycd       = 0.9f,
+        gmbrdenemycd  = 0.95f
     });
 presets.Add(
     "Nightmare", new Preset {
         damagemulti   = 2,
         gameboarddmgx = 1.5f,
         iframes       = 0.65f,
-        enemycd       = 0.8f
+        enemycd       = 0.8f,
+        gmbrdenemycd  = 0.9f
     });
 presets.Add(
     "Nightmare-EX", new Preset {
         damagemulti   = 2.5f,
         gameboarddmgx = 1.75f,
         iframes       = 0.5f,
-        enemycd       = 0.7f
+        enemycd       = 0.7f,
+        gmbrdenemycd  = 0.85f
     });
 presets.Add(
     "Nightmare-Neo", new Preset {
@@ -97,6 +100,7 @@ presets.Add(
         gameboarddmgx = 1.75f,
         iframes       = 0.5f,
         enemycd       = 0.7f,
+        gmbrdenemycd  = 0.85f,
         battlerewards = 0.5f,
         downedregen   = 0,
         victoryres    = -1
@@ -197,7 +201,7 @@ foreach (string scrName in loadLikes)
         global.diff_hitall = ini_read_real(""DIFFICULTY"", ""HIT_ALL"", {presets[preset_default].hitall.ToString().ToLower()});
         global.diff_iframes = ini_read_real(""DIFFICULTY"", ""I_FRAMES"", {presets[preset_default].iframes.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""ENEMY_COOLDOWNS"", {presets[preset_default].enemycd.ToString("F10", CultureInfo.InvariantCulture)});
-        global.diff_enemycd = ini_read_real(""DIFFICULTY"", ""GMBRD_ENEMY_CDS"", {presets[preset_default].gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)});
+        global.diff_gmbrdenemycd = ini_read_real(""DIFFICULTY"", ""GMBRD_ENEMY_CDS"", {presets[preset_default].gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_tpgain = ini_read_real(""DIFFICULTY"", ""TP_GAIN"", {presets[preset_default].tpgain.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_battlerewards = ini_read_real(""DIFFICULTY"", ""BATTLE_REWARDS"", {presets[preset_default].battlerewards.ToString("F10", CultureInfo.InvariantCulture)});
         global.diff_rewardranking = ini_read_real(""DIFFICULTY"", ""REWARD_RANKING"", {presets[preset_default].rewardranking.ToString().ToLower()});
@@ -881,7 +885,7 @@ importGroup = new(Data){
 string one_over_cd = "(global.diff_enemycd <= 0 ? 1 : (1/global.diff_enemycd))";
 string one_over_cd_2 = "(global.diff_enemycd <= 0 ? 1 : (1/(global.diff_enemycd*global.diff_enemycd)))"; // TODO remove if unused
 // some attacks rely on the heart existing so have it fly out onto the box sooner
-importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = min(8, global.diff_enemycd * 8)");
+importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = min(8, floor(global.diff_enemycd * 8))");
 importGroup.QueueFindReplace("gml_Object_obj_moveheart_Step_0", "image_alpha += 0.334;", $"image_alpha += max(0.334, {one_over_cd} * 0.334)");
 
 string[] bulletCons = {"gml_Object_obj_dbulletcontroller"};
@@ -1220,8 +1224,10 @@ if (ch_no == 3) {
     importGroup.QueueFindReplace("gml_Object_obj_elnina_mascotattack_Step_0", "shottimer[i] >= shotrate[i]", "shottimer[i] >= global.diff_enemycd * shotrate[i]");
 
     // include water cooler
-    importGroup.QueueRegexFindReplace("gml_Object_obj_shadowman_tommygun_Step_0", "(?<!turn|regraze)timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
-    // TODO doesn't work :(
+    importGroup.QueueFindReplace("gml_Object_obj_watercooler_bullet_rainball_Step_0", "timer >= threshold", "timer >= (global.diff_enemycd * threshold)");
+
+    // include zaper
+    importGroup.QueueRegexFindReplace("gml_Object_obj_zapper_laser_manager_Alarm_0", "alarm\\[(0|1)\\] (\\+?-?)= ([^;]+)", "alarm[$1] $2= ceil(global.diff_enemycd * ($3))");
 }
 
 // Apply Game Board Enemy Cooldowns
@@ -1255,12 +1261,12 @@ if (ch_no == 3)
     importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Step_0", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
     importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Other_22", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
     // John Mantleholder / Nightmare
-    importGroup.QueueFindReplace("gml_Object_obj_shadow_mantle_enemy_Create_0", "attacktimer = 10", $"attacktimer = floor({gmbrdenemycd} * 10)");
-    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=attack|burstwave|spawnenemies|flamewave|dash)timer (\\+?-?)= ([^;]+)",
+    // importGroup.QueueFindReplace("gml_Object_obj_shadow_mantle_enemy_Create_0", "attacktimer = 10", $"attacktimer = floor({gmbrdenemycd} * 10)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=burstwave|spawnenemies|flamewave|dash)timer (\\+?-?)= ([^;]+)",
         $"timer $1= floor({gmbrdenemycd} * ($2))");
-    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=attack|burstwave|spawnenemies|flamewave|dash)timer >(=?) (-?[0-9|\\.]+)",
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=burstwave|spawnenemies|flamewave|dash)timer >(=?) (-?[0-9|\\.]+)",
         $"timer >$1 {gmbrdenemycd} * ($2)");
-    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=attack|burstwave|spawnenemies|flamewave|dash)timer == (-?[0-9|\\.]+)",
+    importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=burstwave|spawnenemies|flamewave|dash)timer == (-?[0-9|\\.]+)",
         $"timer == ceil({gmbrdenemycd} * ($1))");
 }
 
