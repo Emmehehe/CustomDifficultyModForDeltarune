@@ -44,6 +44,9 @@ UndertaleModLib.Compiler.CodeImportGroup importGroup = new(Data){
 // Hide TP Gain from the menu to reduce clutter as it's not that useful. Users can still adjust TP Gain from the .ini file if needed.
 readonly bool hide_tpgain = true;
 
+// Hide Reward Ranking from the menu to reduce clutter as it's not that useful. Users can still adjust Reward Ranking from the .ini file if needed.
+readonly bool hide_rewardrank = true;
+
 // Define presets
 readonly struct Preset {
     public Preset () {}
@@ -138,7 +141,7 @@ foreach (string scrName in gamestartLikes)
                             global.diff_gmbrdenemycd = {pair.Value.gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)};
                             {(hide_tpgain ? "" : $"global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};")}
                             global.diff_battlerewards = {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)};
-                            global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};
+                            {(hide_rewardrank ? "" : $"global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};")}
                             global.diff_downdeficit = {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_downedregen = {pair.Value.downedregen.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_victoryres = {pair.Value.victoryres.ToString("F10", CultureInfo.InvariantCulture)};
@@ -164,6 +167,51 @@ foreach (string scrName in gamestartLikes)
             }}
 
             global.diff_usepreset_default();
+
+            // Provide support for mod devs to add compatibility
+            enum DIFFOP
+            {{
+                DAMAGE,
+                DAMAGE_GB, // gameboard (ch3) only
+                HITALL,
+                IFRAMES,
+                ENEMYCD,
+                ENEMYCD_GB, // gameboard (ch3) only
+                TPGAIN, // hidden option
+                REWARDS,
+                REWARDRANK_GB // hidden option & gameboard (ch3) only
+                DOWNDEF,
+                DOWNREGEN,
+                VICRES
+            }}
+            global.diff_apply = function(arg0, arg1, arg2) {{
+                switch (arg0) {{
+                    case DIFFOP.DAMAGE:
+                    return ceil(global.diff_damagemulti * arg1);
+                    case DIFFOP.DAMAGE_GB:
+                    return (global.diff_gameboarddmgx < 0 ? global.diff_damagemulti : global.diff_gameboarddmgx) * arg1;
+                    case DIFFOP.HITALL:
+                    return global.diff_hitall || arg1;
+                    case DIFFOP.IFRAMES:
+                    return ceil(global.diff_iframes * arg1);
+                    case DIFFOP.ENEMYCD:
+                    return round(global.diff_enemycd * arg1);
+                    case DIFFOP.ENEMYCD_GB:
+                    return ceil((global.diff_gmbrdenemycd < 0 ? global.diff_enemycd : global.diff_gmbrdenemycd) * arg1);
+                    case DIFFOP.TPGAIN:
+                    return ceil(global.diff_tpgain * arg1);
+                    case DIFFOP.REWARDS:
+                    return ceil(global.diff_battlerewards * arg1);
+                    case DIFFOP.REWARDRANK_GB:
+                    return global.diff_rewardranking || arg1;
+                    case DIFFOP.DOWNDEF:
+                    return max(-999, floor(global.diff_downdeficit * arg1));
+                    case DIFFOP.DOWNREGEN:
+                    return ceil(global.diff_downedregen * arg1);
+                    case DIFFOP.VICRES:
+                    return ceil(global.diff_victoryres >= 0 ? max(1, arg1 * global.diff_victoryres) : arg2);
+                }}
+            }}
 
         ");
 }
@@ -354,7 +402,7 @@ foreach (string darkcon in darkcons)
         ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
         array_push(formdata, rowdata);
 
-        {(ch_no != 3 ? "" : @"
+        {((hide_rewardrank || ch_no != 3) ? "" : @"
         var rowdata = ds_map_create();
         ds_map_add(rowdata, ""title_en"", ""Reward Ranking"");
         ds_map_add(rowdata, ""value_range_en"", ""OFF=false;ON=true"");
@@ -537,7 +585,7 @@ if (ch_no == 3)
         "if (obj_board_controller.kris_object.myhealth <= 0)");
 }
 
-// Apply down penalty
+// Apply down deficit
 foreach (string scrName in damageLikes)
 {   
     importGroup.QueueFindReplace(scrName, "global.maxhp[chartarget] / 2", "max(-999, global.maxhp[chartarget] * global.diff_downdeficit)");
@@ -1264,9 +1312,16 @@ if (ch_no == 3) {
     importGroup.QueueRegexFindReplace("gml_Object_obj_actor_tenna_Draw_0", "lightemuptimer (\\+?-?)= ([^;]+)", "lightemuptimer $1= floor(global.diff_enemycd * ($2))");
 
     // include da knight
-    // TODO
+    // TODO obj_knight_roaring_star
 }
 if (ch_no == 4) {
+    // include Lanino & Elnina
+    importGroup.QueueFindReplace("gml_Object_obj_elnina_mascotattack_Step_0", "shottimer[i] >= shotrate[i]", "shottimer[i] >= global.diff_enemycd * shotrate[i]");
+
+    // include guei
+    // TODO
+
+    // include balthizard
     // TODO
 }
 
@@ -1301,7 +1356,6 @@ if (ch_no == 3)
     importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Step_0", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
     importGroup.QueueRegexFindReplace("gml_Object_obj_board_enemy_monster_Other_22", "bulletimer (\\+?-?)= ([^;]+)", $"bulletimer $1= floor({gmbrdenemycd} * ($2))");
     // John Mantleholder / Nightmare
-    // importGroup.QueueFindReplace("gml_Object_obj_shadow_mantle_enemy_Create_0", "attacktimer = 10", $"attacktimer = floor({gmbrdenemycd} * 10)");
     importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=burstwave|spawnenemies|flamewave|dash)timer (\\+?-?)= ([^;]+)",
         $"timer $1= floor({gmbrdenemycd} * ($2))");
     importGroup.QueueRegexFindReplace("gml_Object_obj_shadow_mantle_enemy_Step_2", "(?<=burstwave|spawnenemies|flamewave|dash)timer >(=?) (-?[0-9|\\.]+)",
