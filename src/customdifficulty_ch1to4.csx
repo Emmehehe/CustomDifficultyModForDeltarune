@@ -1312,7 +1312,28 @@ if (ch_no == 3) {
     importGroup.QueueRegexFindReplace("gml_Object_obj_actor_tenna_Draw_0", "lightemuptimer (\\+?-?)= ([^;]+)", "lightemuptimer $1= floor(global.diff_enemycd * ($2))");
 
     // include da knight
-    // TODO obj_knight_roaring_star
+    importGroup.QueueFindReplace("gml_Object_obj_knight_roaring2_Step_0", "(roaring_timer % 5)", "(roaring_timer % ceil(global.diff_enemycd * 5))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_roaring2_Step_0", "(attack_timer == 4)", "(attack_timer == ceil(global.diff_enemycd * 4))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_roaring2_Step_0", "attack_timer = floor(-1 + intensity);", "attack_timer = floor(global.diff_enemycd * (-1 + intensity));");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_roaring2_Other_10", "(roaring_timer % 5)", "(roaring_timer % ceil(global.diff_enemycd * 5))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_roaring2_Other_10", "(attack_timer == 4)", "(attack_timer == ceil(global.diff_enemycd * 4))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_roaring2_Other_10", "attack_timer = floor(attack_timer_goal + attack_token);",
+        "attack_timer = floor(global.diff_enemycd * (attack_timer_goal + attack_token));");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Step_0", "(timer >= spawn_speed)", "(timer >= global.diff_enemycd * spawn_speed)");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Step_0", "timer = -4;", "timer = floor(global.diff_enemycd * -4);");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "(timer / 30)", "(timer / (global.diff_enemycd * 30))");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "timer, timer", "(timer / global.diff_enemycd), (timer / global.diff_enemycd)");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "-timer + 40, -timer + 40",
+        "(-timer / global.diff_enemycd) + 40, (-timer / global.diff_enemycd) + 40");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer <(=?) ([0-9|\\.]+)", "timer <$1 global.diff_enemycd * ($2)");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer % ([0-9]+)", "timer % ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_tunnel_slasher_Draw_0", "fulltimer", "(fulltimer / global.diff_enemycd)");
+    // TODO obj_knight_enemy obj_knight_stream obj_roaringknight_quickslash_attack obj_knight_weird_circle obj_knight_split_growtangle_backup obj_knight_swordfall obj_knight_bullethell1
+        // obj_roaringknight_splitslash obj_roaringknight_quickslash_big obj_knight_rotating_slash obj_knight_tunnel_slasher_2_revised obj_knight_split_growtangle
+        // obj_knight_split_growtangle_vertical obj_knight_bullethell2 obj_dknight_slasher obj_knight_slasher obj_bullet_knight_crescentGenerator (unused attack)
+    // TODO don't think need do? obj_knight_pointing_starchild obj_knight_lightorb obj_knight_pointing_star obj_knight_weird_bottom_manager obj_roaringknight_quickslash
 }
 if (ch_no == 4) {
     // include Lanino & Elnina
