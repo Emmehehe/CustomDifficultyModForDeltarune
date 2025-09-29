@@ -1,12 +1,20 @@
 # Custom Difficulty Mod for DELTARUNE
-Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
+Difficulty options for DELTARUNE. Make the game easy, hard, or nightmare! ( or no-hit! )
 
-<img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
+<img src="https://github.com/user-attachments/assets/4fa53a16-851c-46e3-a805-bb6087690a46" width="480" />
 
 ## Download
-**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.4.0)**
+**[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.5.0)**
 
 ## What you can change
+- **Presets** — Select from various difficulty presets
+  - Easy `-50% damage, +50% i-frames`
+  - Normal `Standard Deltarune experience`
+  - Hard `+50% damage, -20% i-frames, -10% enemy cooldowns`
+  - Nightmare `+100% increased damage, -35% i-frames, -20% enemy cooldowns`
+  - Nightmare-EX `+150% damage, -50% i-frames, -30% enemy cooldowns`
+  - Nightmare-Neo `NIGHTMARE-EX with -50% battle rewards, and no passive regen/revive for downed characters`
+  - No-Hit `Infinite damage to every party member`
 - **Damage Multi** — multiply all incoming damage by this value
   - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
   - For attacks that deal damage as a percentage of the current HP, instead uses exponential logic to determine damage scaling. e.g. An attack that normally does 50% of your HP in vanilla, instead does 70.7% with double damage, and 25% with half damage. The calculation is thus: `dmgratio = vanilladmgratio^(1/dmgmulti)`.
@@ -16,24 +24,37 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
   - Additionally, attacks that adjust their damage for certain characters, no longer do so.
   - For no-hit runs, combine this setting with `Damage Multi=INF`.
 - **I-Frames** — multiply the number of i-frames received after damage by this value
-- **TP Gain** — multiply TP gain from all sources (except item use) by this value
+- **Enemy Cooldowns** — multiplier for the cooldown between enemy attacks & bullet patterns
+  - Chapter 4 Enemy Cooldowns is still Work-In-Progress and many encounters won't respect the option currently.
+  - A few tweaks have been made to some attacks:
+    - Reduce random placement of heart shapers (Head Hathy) at lower cooldowns as the attack can trap you.
+    - Cap timer reduction for wave chain (Spade King) as it becomes a solid wall quite quickly.
+    - Shorten tails for chain of hell (Spade King's chain bullets) at lower cooldowns as the attack can trap you.
+    - Ensure Queen's leg stomp attack waits for an available slot before spawning a leg, instead of flooding the box.
 - **Battle Rewards** — multiply post-battle rewards by this value
 - **Down Deficit** — when a party member is downed, their HP is set to -50% max HP; this option overrides that
 - **Downed Regen** — when downed, party members regen 12.5% max HP every turn; this option overrides that
 - **Victory Res** — when a battle is won, all downed party members are healed up to 12.5% max HP; this option overrides that
   - OFF: Can also be switched off entirely by reducing past 0%.
-- **Experiment: Enemy CDs** — multiplier for the cooldown between enemy attacks & bullet patterns
-  - Marked experimental, as this feature is new and untested. There might be encounters that are unaffected by the setting, or affected in a negative way. Feedback very welcome.
 <details> 
   <summary><strong>CHAPTER 3 SPOILERS...</strong></summary>
 
-  - **Gameboard Dmg X** — Multiplier for the damage in the chapter 3 game boards.
+  - **Gameboard Dmg X** — multiplier for the damage in the chapter 3 game boards
     - Only shows up in the menu in chapter 3.
     - INHERIT - Can be set to inherit from the 'Damage Multi' setting by reducing past 0%.
     - Attacks that are scripted to leave a character at 1 HP, or other threshold, still do so.
-  
-  - **Reward Ranking** — When this option is turned on, the 'Battle Rewards' option also affects the ranking that you get from battles in the chapter 3 game boards.
+
+  - **Gmbrd Enemy CDs** — multiplier for the enemy attack cooldowns in the chapter 3 game boards
     - Only shows up in the menu in chapter 3.
+    - INHERIT - Can be set to inherit from the 'Enemy Cooldowns' setting by reducing past 0%.
+  
+  - **Reward Ranking** — when this option is turned on, the 'Battle Rewards' option also affects the ranking that you get from battles in the chapter 3 game boards
+    - Only shows up in the menu in chapter 3.
+</details>
+<details> 
+  <summary><strong>Hidden (.ini only)</strong></summary>
+
+  - **TP Gain** — multiply TP gain from all sources (except item use) by this value
 </details>
 
 ## How to use
@@ -41,14 +62,10 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or brutal.
 1. Open the menu in a dark world.
 2. Go to **MODS** and adjust settings.
 
-## Installation via Deltamod
-**Full game**
-- modmenu-deltamod.zip
-- custom-difficulty-deltamod.zip
+## Installation via Deltamod/Deltahub
+**Full game** — custom-difficulty-drmod-fullgame-{version number}.zip
 
-**Demo**
-- modmenu-demo-deltamod.zip
-- custom-difficulty-demo-deltamod.zip
+**Demo** — custom-difficulty-drmod-demo-{version number}.zip
 
 ## Installation without Deltamod
 
@@ -244,4 +261,4 @@ UndertaleModCli.exe load "chapter4_windows\data.win" --scripts "src\customdiffic
 
 **Saves:** Compatible with vanilla saves. The mod reads and writes to a new `.ini` file; no change to vanilla save data.
 
-**Other mods:** Not guaranteed. This mod makes specific line edits to the dark world menu & various damage scripts, so those areas will be the source of any potential conflicts. Mods that avoid those areas are more likely to work.
+**Other mods:** Not guaranteed. This mod makes specific line edits to the dark world menu, various damage scripts, enemy attack code, and battle controller code; so those areas will be the source of any potential conflicts. Mods that avoid those areas are more likely to work.
