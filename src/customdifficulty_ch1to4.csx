@@ -139,9 +139,9 @@ foreach (string scrName in gamestartLikes)
                             global.diff_iframes = {pair.Value.iframes.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_enemycd = {pair.Value.enemycd.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_gmbrdenemycd = {pair.Value.gmbrdenemycd.ToString("F10", CultureInfo.InvariantCulture)};
-                            {(hide_tpgain ? "" : $"global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};")}
+                            global.diff_tpgain = {pair.Value.tpgain.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_battlerewards = {pair.Value.battlerewards.ToString("F10", CultureInfo.InvariantCulture)};
-                            {(hide_rewardrank ? "" : $"global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};")}
+                            global.diff_rewardranking = {pair.Value.rewardranking.ToString().ToLower()};
                             global.diff_downdeficit = {pair.Value.downdeficit.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_downedregen = {pair.Value.downedregen.ToString("F10", CultureInfo.InvariantCulture)};
                             global.diff_victoryres = {pair.Value.victoryres.ToString("F10", CultureInfo.InvariantCulture)};
@@ -179,7 +179,7 @@ foreach (string scrName in gamestartLikes)
                 ENEMYCD_GB, // gameboard (ch3) only
                 TPGAIN, // hidden option
                 REWARDS,
-                REWARDRANK_GB // hidden option & gameboard (ch3) only
+                REWARDRANK_GB, // hidden option & gameboard (ch3) only
                 DOWNDEF,
                 DOWNREGEN,
                 VICRES
@@ -931,7 +931,6 @@ importGroup = new(Data){
 
 // Enemy Cooldowns
 string one_over_cd = "(global.diff_enemycd <= 0 ? 1 : (1/global.diff_enemycd))";
-string one_over_cd_2 = "(global.diff_enemycd <= 0 ? 1 : (1/(global.diff_enemycd*global.diff_enemycd)))"; // TODO remove if unused
 // some attacks rely on the heart existing so have it fly out onto the box sooner
 importGroup.QueueFindReplace("gml_Object_obj_moveheart_Create_0", "flytime = 8", "flytime = min(8, floor(global.diff_enemycd * 8))");
 importGroup.QueueFindReplace("gml_Object_obj_moveheart_Step_0", "image_alpha += 0.334;", $"image_alpha += max(0.334, {one_over_cd} * 0.334)");
@@ -1032,19 +1031,26 @@ foreach (string con in bulletCons)
         importGroup.QueueFindReplace(con + "_Step_0", $"btimer == {term}", $"btimer == ceil(global.diff_enemycd * ({term}))");
     }
 }
-if (ch_no == 1) {
-    // TODO and demo
-    // Reduce randomness for lower cooldowns as heart shaper can trap you.
-    importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(obj_battlesolid.x - 50) + random(100)",
-        "(obj_battlesolid.x - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
-    importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(obj_battlesolid.y - 50) + random(100)",
-        "(obj_battlesolid.y - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+if (ch_no == 1 || ch_no == 0) {
+    string[] ch_postfixes = {""};
+    if (ch_no == 0) {
+        string[] demo_postfixes = {"_ch1"};
+        ch_postfixes = ch_postfixes.Concat(demo_postfixes).ToArray();
+    }
+    foreach (string postfix in ch_postfixes)
+    {
+        // Reduce randomness for lower cooldowns as heart shaper can trap you.
+        importGroup.QueueFindReplace($"gml_Object_obj_dbulletcontroller{postfix}_Step_0", "(obj_battlesolid.x - 50) + random(100)",
+            "(obj_battlesolid.x - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+        importGroup.QueueFindReplace($"gml_Object_obj_dbulletcontroller{postfix}_Step_0", "(obj_battlesolid.y - 50) + random(100)",
+            "(obj_battlesolid.y - 25 - 25 * min(1, global.diff_enemycd)) + random(50 + 50 * min(1, global.diff_enemycd))");
+    }
 
     // King's wave chain spades become undodgeable below a certain value.
-    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 20", "btimer >= max(12, global.diff_enemycd * 20)");
-    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 18", "btimer >= max(12, global.diff_enemycd * 18)");
-    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 16", "btimer >= max(12, global.diff_enemycd * 16)");
-    importGroup.QueueFindReplace("gml_Object_obj_wavechain_Step_0", "btimer >= 14", "btimer >= max(12, global.diff_enemycd * 14)");
+    importGroup.QueueFindReplace($"gml_Object_obj_wavechain{(ch_no == 0 ? "_ch1" : "")}_Step_0", "btimer >= 20", "btimer >= max(12, global.diff_enemycd * 20)");
+    importGroup.QueueFindReplace($"gml_Object_obj_wavechain{(ch_no == 0 ? "_ch1" : "")}_Step_0", "btimer >= 18", "btimer >= max(12, global.diff_enemycd * 18)");
+    importGroup.QueueFindReplace($"gml_Object_obj_wavechain{(ch_no == 0 ? "_ch1" : "")}_Step_0", "btimer >= 16", "btimer >= max(12, global.diff_enemycd * 16)");
+    importGroup.QueueFindReplace($"gml_Object_obj_wavechain{(ch_no == 0 ? "_ch1" : "")}_Step_0", "btimer >= 14", "btimer >= max(12, global.diff_enemycd * 14)");
 }
 string[] dojoCons = {"gml_Object_obj_dbullet_maker"};
 if (ch_no == 0) {
@@ -1074,58 +1080,65 @@ foreach (string con in dojoCons)
     importGroup.QueueFindReplace(con + "_Draw_0", "activetimer == timetarg", "activetimer == ceil(global.diff_enemycd * timetarg)");
     importGroup.QueueFindReplace(con + "_Step_0", "activetimer == 4", "activetimer == ceil(global.diff_enemycd * 4)");
 }
-if (ch_no == 1) {
-    // TODO and demo
-    // include Lancer overworld attacks
-    importGroup.QueueFindReplace("gml_Object_obj_overworld_spademaker_Create_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
-    importGroup.QueueFindReplace("gml_Object_obj_overworld_spademaker_Alarm_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
 
-    // include K.Round leap attacks
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "jumptimer >= ", "jumptimer >= global.diff_enemycd * ");
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer >= ", "s_timer >= global.diff_enemycd * ");
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer == 20", "s_timer == ceil(global.diff_enemycd * 20)");
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "image_xscale += ", $"image_xscale += {one_over_cd} * ");
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "image_yscale += ", $"image_yscale += {one_over_cd} * ");
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "jumptimer = 10", "jumptimer = floor(global.diff_enemycd * (10))");
-    importGroup.QueueFindReplace("gml_Object_obj_checkers_leap_Step_0", "s_timer = 21", "s_timer = floor(global.diff_enemycd * (21))");
+if (ch_no == 1 || ch_no == 0) {
+    string[] ch_postfixes = {""};
+    if (ch_no == 0) {
+        string[] demo_postfixes = {"_ch1"};
+        ch_postfixes = ch_postfixes.Concat(demo_postfixes).ToArray();
+    }
+    foreach (string postfix in ch_postfixes)
+    {
+        // include Lancer overworld attacks
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Create_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
 
-    // include star bird's overworld attacks
-    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer >= ", "attacktimer >= global.diff_enemycd * ");
-    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer = 36", "attacktimer = floor(global.diff_enemycd * (36))");
-    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "attacktimer = 38", "attacktimer = floor(global.diff_enemycd * (38))");
-    // fix star bullets dissappearing too soon
-    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "if (shot == 1)", "if (false && shot == 1)");
-    importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Create_0", "trackstarbullet = array_create(0);");
-    importGroup.QueueFindReplace("gml_Object_obj_starwalker_overworld_Step_0", "starbullet[i].depth = 1000;", @"
-        starbullet[i].depth = 1000;
-        array_push(trackstarbullet, starbullet[i]);
-    ");
-    importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Step_0", @"
-        var newtrackstarbullet = array_create(0);
-        var cam = view_camera[0];
-        var x1 = camera_get_view_x(cam);
-        var y1 = camera_get_view_y(cam);
-        var x2 = x1 + camera_get_view_width(cam);
-        var y2 = y1 + camera_get_view_height(cam);
-        for (var i = 0; i < array_length(trackstarbullet); i++) {
-            with (trackstarbullet[i]) {
-                if(!point_in_rectangle( x, y, x1, y1, x2, y2))
-                    instance_destroy();
-                else
-                    array_push(newtrackstarbullet, self);
+        // include K.Round leap attacks
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "jumptimer >= ", "jumptimer >= global.diff_enemycd * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "s_timer >= ", "s_timer >= global.diff_enemycd * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "s_timer == 20", "s_timer == ceil(global.diff_enemycd * 20)");
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "image_xscale += ", $"image_xscale += {one_over_cd} * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "image_yscale += ", $"image_yscale += {one_over_cd} * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "jumptimer = 10", "jumptimer = floor(global.diff_enemycd * (10))");
+        importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "s_timer = 21", "s_timer = floor(global.diff_enemycd * (21))");
+
+        // include star bird's overworld attacks
+        importGroup.QueueFindReplace($"gml_Object_obj_starwalker_overworld{postfix}_Step_0", "attacktimer >= ", "attacktimer >= global.diff_enemycd * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_starwalker_overworld{postfix}_Step_0", "attacktimer = 36", "attacktimer = floor(global.diff_enemycd * (36))");
+        importGroup.QueueFindReplace($"gml_Object_obj_starwalker_overworld{postfix}_Step_0", "attacktimer = 38", "attacktimer = floor(global.diff_enemycd * (38))");
+        // fix star bullets dissappearing too soon
+        importGroup.QueueFindReplace($"gml_Object_obj_starwalker_overworld{postfix}_Step_0", "if (shot == 1)", "if (false && shot == 1)");
+        importGroup.QueueAppend("gml_Object_obj_starwalker_overworld_Create_0", "trackstarbullet = array_create(0);");
+        importGroup.QueueFindReplace($"gml_Object_obj_starwalker_overworld{postfix}_Step_0", "starbullet[i].depth = 1000;", @"
+            starbullet[i].depth = 1000;
+            array_push(trackstarbullet, starbullet[i]);
+        ");
+        importGroup.QueueAppend($"gml_Object_obj_starwalker_overworld{postfix}_Step_0", @"
+            var newtrackstarbullet = array_create(0);
+            var cam = view_camera[0];
+            var x1 = camera_get_view_x(cam);
+            var y1 = camera_get_view_y(cam);
+            var x2 = x1 + camera_get_view_width(cam);
+            var y2 = y1 + camera_get_view_height(cam);
+            for (var i = 0; i < array_length(trackstarbullet); i++) {
+                with (trackstarbullet[i]) {
+                    if(!point_in_rectangle( x, y, x1, y1, x2, y2))
+                        instance_destroy();
+                    else
+                        array_push(newtrackstarbullet, self);
+                }
             }
-        }
-        trackstarbullet = newtrackstarbullet;
-    ");
+            trackstarbullet = newtrackstarbullet;
+        ");
+    }
 
     // King's chain of hell could trap you, shorten chain length sooner
-    importGroup.QueueFindReplace("gml_Object_obj_chain_of_hell_Step_0", "bullettimer >= 30", "bullettimer >= min(30, global.diff_enemycd * 30)");
+    importGroup.QueueFindReplace($"gml_Object_obj_chain_of_hell{(ch_no == 0 ? "_ch1" : "")}_Step_0", "bullettimer >= 30", "bullettimer >= min(30, global.diff_enemycd * 30)");
 
     // include box drag chain's time to decide next path
-    importGroup.QueueFindReplace("gml_Object_obj_finalchain_Step_0", "gotimer >= ", "gotimer >= global.diff_enemycd * ");
+    importGroup.QueueFindReplace($"gml_Object_obj_finalchain{(ch_no == 0 ? "_ch1" : "")}_Step_0", "gotimer >= ", "gotimer >= global.diff_enemycd * ");
 }
-if (ch_no == 2) {
-    // TODO and demo
+if (ch_no == 2 || ch_no == 0) {
     // include hangplugs
     importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer = 130 + random(20)", "timer = floor(global.diff_enemycd * (130 + random(20)))");
     importGroup.QueueFindReplace("gml_Object_obj_hangplug_Create_0", "timer -= ", "timer -= global.diff_enemycd * ");
@@ -1211,8 +1224,8 @@ if (ch_no == 2) {
         importGroup.QueueRegexFindReplace(scrName, "timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
         importGroup.QueueFindReplace(scrName, "timer == wallcreatetimer[wallcount]", "timer == ceil(global.diff_enemycd * (wallcreatetimer[wallcount]))");
         // TODO why won't this $@#! attack loop? (not too noticeable at 70%)
-        // importGroup.QueueFindReplace(scrName, "wallcount < wallcountmax", "wallcount < (wallcountmax / global.diff_enemycd)");
-        // importGroup.QueueFindReplace(scrName, "made < spawncount", "made < (spawncount / global.diff_enemycd)");
+        // importGroup.QueueFindReplace(scrName, "wallcount < wallcountmax", "wallcount < ({one_over_cd} * wallcountmax)");
+        // importGroup.QueueFindReplace(scrName, "made < spawncount", "made < ({one_over_cd} * spawncount)");
     }
 
     // include Spamton Neo wire heart
@@ -1251,7 +1264,7 @@ if (ch_no == 2) {
     importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer2 >= 50", "timer2 >= global.diff_enemycd * 50");
     importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "timer3 == 150", "timer3 == ceil(global.diff_enemycd * 150)");
     // TODO why won't this $@#! attack loop? (not too noticeable at 70%)
-    // importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "pipiscount >= maxpipis", "pipiscount >= (maxpipis / global.diff_enemycd)");
+    // importGroup.QueueFindReplace("gml_Object_obj_pipis_controller_Draw_0", "pipiscount >= maxpipis", "pipiscount >= ({one_over_cd} * maxpipis)");
 
     // include Spamton Neo big shots
     importGroup.QueueFindReplace("gml_Object_obj_spamton_neo_enemy_Draw_0", "dance_timer == (17 - (fastshot * 10))", "dance_timer == ceil(global.diff_enemycd * (17 - (fastshot * 10)))");
@@ -1285,13 +1298,13 @@ if (ch_no == 3) {
     importGroup.QueueFindReplace("gml_Object_obj_tenna_allstars_manager_Step_0", "(timer % 32) == 16", "(timer % (2 * ceil(global.diff_enemycd * 16))) == ceil(global.diff_enemycd * 16)");
     importGroup.QueueFindReplace("gml_Object_obj_tenna_allstars_manager_Step_0", "(timer % 32) == 0", "(timer % (2 * ceil(global.diff_enemycd * 16))) == 0");
     importGroup.QueueRegexFindReplace("gml_Object_obj_tenna_rimshot_star_Step_0", "rimshot_timer == ([0-9|\\.]+)", "rimshot_timer == floor(global.diff_enemycd * ($1))");
-    importGroup.QueueFindReplace("gml_Object_obj_tenna_rimshot_star_Step_0", "laugh_timer += 0.25;", "laugh_timer += 0.25 / global.diff_enemycd;");
+    importGroup.QueueFindReplace("gml_Object_obj_tenna_rimshot_star_Step_0", "laugh_timer += 0.25;", "laugh_timer += {one_over_cd} * 0.25;");
     importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "rimshot_timer = 74;", "rimshot_timer = ceil(global.diff_enemycd * 74);");
     importGroup.QueueFindReplace("gml_Object_obj_dbulletcontroller_Step_0", "(btimer % rate1) == rate2", "(btimer % ceil(global.diff_enemycd * rate1)) == floor(global.diff_enemycd * rate2)");
     importGroup.QueueRegexFindReplace("gml_Object_obj_actor_tenna_Create_0", "(?<=lightemup|bullet_)timer (\\+?-?)= ([^;]+)", "timer $1= floor(global.diff_enemycd * ($2))");
     importGroup.QueueFindReplace("gml_Object_obj_actor_tenna_Draw_0", "bullet_timer > (_rate - _jumpspeed)", "bullet_timer > (global.diff_enemycd * (_rate - _jumpspeed))");
     importGroup.QueueFindReplace("gml_Object_obj_actor_tenna_Draw_0", "(bullet_timer + _movespeed + _waitspeed) > (_rate - _jumpspeed)",
-        "((bullet_timer / global.diff_enemycd) + _movespeed + _waitspeed) > (_rate - _jumpspeed)");
+        "(({one_over_cd} * bullet_timer) + _movespeed + _waitspeed) > (_rate - _jumpspeed)");
     importGroup.QueueRegexFindReplace("gml_Object_obj_actor_tenna_Draw_0", "lightemuptimer == ([0-9|\\.]+)", "lightemuptimer == ceil(global.diff_enemycd * ($1))");
     importGroup.QueueFindReplace("gml_Object_obj_actor_tenna_Draw_0", "lightemuptimer < _jumpspeed", "lightemuptimer < (global.diff_enemycd * _jumpspeed)");
     importGroup.QueueFindReplace("gml_Object_obj_actor_tenna_Draw_0", "lightemuptimer >= _jumpspeed", "lightemuptimer >= (global.diff_enemycd * _jumpspeed)");
@@ -1322,18 +1335,46 @@ if (ch_no == 3) {
     importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Step_0", "(timer >= spawn_speed)", "(timer >= global.diff_enemycd * spawn_speed)");
     importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Step_0", "timer = -4;", "timer = floor(global.diff_enemycd * -4);");
     importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "(timer / 30)", "(timer / (global.diff_enemycd * 30))");
-    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "timer, timer", "(timer / global.diff_enemycd), (timer / global.diff_enemycd)");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "timer, timer", "({one_over_cd} * timer), ({one_over_cd} * timer)");
     importGroup.QueueFindReplace("gml_Object_obj_roaringknight_boxsplitter_attack_Draw_0", "-timer + 40, -timer + 40",
-        "(-timer / global.diff_enemycd) + 40, (-timer / global.diff_enemycd) + 40");
+        "({one_over_cd} * -timer) + 40, ({one_over_cd} * -timer) + 40");
     importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
     importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer <(=?) ([0-9|\\.]+)", "timer <$1 global.diff_enemycd * ($2)");
     importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer % ([0-9]+)", "timer % ceil(global.diff_enemycd * ($1))");
     importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_Step_0", "timer >(=?) ([0-9|\\.]+)", "timer >$1 global.diff_enemycd * ($2)");
-    importGroup.QueueFindReplace("gml_Object_obj_knight_tunnel_slasher_Draw_0", "fulltimer", "(fulltimer / global.diff_enemycd)");
-    // TODO obj_knight_enemy obj_knight_stream obj_roaringknight_quickslash_attack obj_knight_weird_circle obj_knight_split_growtangle_backup obj_knight_swordfall obj_knight_bullethell1
-        // obj_roaringknight_splitslash obj_roaringknight_quickslash_big obj_knight_rotating_slash obj_knight_tunnel_slasher_2_revised obj_knight_split_growtangle
-        // obj_knight_split_growtangle_vertical obj_knight_bullethell2 obj_dknight_slasher obj_knight_slasher obj_bullet_knight_crescentGenerator (unused attack)
-    // TODO don't think need do? obj_knight_pointing_starchild obj_knight_lightorb obj_knight_pointing_star obj_knight_weird_bottom_manager obj_roaringknight_quickslash
+    importGroup.QueueFindReplace("gml_Object_obj_knight_tunnel_slasher_Draw_0", "fulltimer", "({one_over_cd} * fulltimer)");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_quickslash_attack_Create_0", "timer = 99;", "timer = floor(global.diff_enemycd * 99);");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_quickslash_attack_Step_0", "timer = -2;", "timer = floor(global.diff_enemycd * -2);");
+    importGroup.QueueFindReplace("gml_Object_obj_roaringknight_quickslash_attack_Step_0", "(timer >= spawn_speed)", "(timer >= global.diff_enemycd * spawn_speed)");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_rotating_slash_Alarm_2", "knight.timer = knight.spawn_speed;", "knight.timer = floor(global.diff_enemycd * knight.spawn_speed);");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_rotating_slash_Alarm_2", "timer = spawn_speed;", "timer = floor(global.diff_enemycd * spawn_speed);");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_rotating_slash_Step_0", "timer = spawn_speed", "timer = floor(global.diff_enemycd * spawn_speed)");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_rotating_slash_Step_0", "timer = -8;", "timer = floor(global.diff_enemycd * -8)");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_rotating_slash_Step_0", "timer = -12;", "timer = floor(global.diff_enemycd * -12)");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_rotating_slash_Step_0", "timer == cooldown_time", "timer == ceil(global.diff_enemycd * cooldown_time)");
+    importGroup.QueueFindReplace("gml_Object_obj_dknight_slasher_Step_0", "(timer >= (throwernumber * 3))", "(timer >= global.diff_enemycd * (throwernumber * 3))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_slasher_Step_0", "(timer == (6 - diff))", "(timer == ceil(global.diff_enemycd * (6 - diff)))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_slasher_Step_0", "(timer == ((5 - diff) + movespeed))", "(timer == ceil(global.diff_enemycd * ((5 - diff) + movespeed)))");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_3", "timer = -8;", "timer = floor(global.diff_enemycd * -8);");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_2", "alarm[4] = 26;", "alarm[4] = global.diff_enemycd * 26;");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_5", "alarm[0] = 8;", "alarm[0] = global.diff_enemycd * 8;");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Step_0", "alarm\\[([0-9]+)\\] = ([0-9]+);", "alarm[$1] = global.diff_enemycd * $2;");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Other_10", "alarm\\[([0-9]+)\\] = ([0-9]+);", "alarm[$1] = global.diff_enemycd * $2;");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Create_0", "countdown = ([0-9]+);", "countdown = ceil(global.diff_enemycd * $1);");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Step_0", "countdown = countdowner - irandom(1);", "countdown = ceil(global.diff_enemycd * (countdowner - irandom(1)));");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Step_0", "countdown = countdowner;", "countdown = ceil(global.diff_enemycd * countdowner);");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Other_10", "countdown = ([0-9]+);", "countdown = ceil(global.diff_enemycd * $1);");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_tunnel_slasher_2_revised_Alarm_2", "knight.timer = knight.spawn_speed;",
+        "knight.timer = floor(global.diff_enemycd * knight.spawn_speed);");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_2_revised_Step_0", "(?<!turn|intro)timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_2_revised_Step_0", "(?<!turn|intro)timer <(=?) ([0-9|\\.]+)", "timer <$1 global.diff_enemycd * ($2)");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_tunnel_slasher_2_revised_Step_0", "((fake_timer + 8) % 4)", "(fake_timer % ceil(global.diff_enemycd * 4))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_2_revised_Step_0", "(?<!turn|intro)timer (\\+?-?)= ([^;]+)", "timer $1= floor(global.diff_enemycd * ($2))");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_tunnel_slasher_2_revised_Other_10", "(?<!turn|intro)timer (\\+?-?)= ([^;]+)", "timer $1= floor(global.diff_enemycd * ($2))");
+    importGroup.QueueFindReplace("gml_Object_obj_sword_tunnel_manager_Create_0", "timer = -40 + irandom(10);", "timer = floor(global.diff_enemycd * -40 + irandom(10));");
+    importGroup.QueueFindReplace("gml_Object_obj_sword_tunnel_manager_Step_0", "timer >= rate", "timer >= global.diff_enemycd * rate");
+    importGroup.QueueFindReplace("gml_Object_obj_sword_tunnel_manager_Step_0", "timer = max(0, sin(tobytimer / 6) * 2);", "timer = floor(global.diff_enemycd * max(0, sin(tobytimer / 6) * 2));");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_stream_Step_0", "timer == ([0-9|\\.]+)", "timer == ceil(global.diff_enemycd * ($1))");
 }
 if (ch_no == 4) {
     // include Lanino & Elnina
