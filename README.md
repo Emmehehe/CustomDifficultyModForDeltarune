@@ -1,7 +1,7 @@
 # Custom Difficulty Mod for DELTARUNE
 Difficulty options for DELTARUNE. Make the game easy, hard, or nightmare! ( or no-hit! )
 
-<img src="https://github.com/user-attachments/assets/1583688c-a3fc-4c69-bc3c-c215248cdec8" width="480" />
+<img src="https://github.com/user-attachments/assets/4fa53a16-851c-46e3-a805-bb6087690a46" width="480" />
 
 ## Download
 **[Latest release](https://github.com/Emmehehe/CustomDifficultyModForDeltarune/releases/tag/1.5.0)**
@@ -25,6 +25,12 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or nightmare! ( or n
   - For no-hit runs, combine this setting with `Damage Multi=INF`.
 - **I-Frames** — multiply the number of i-frames received after damage by this value
 - **Enemy Cooldowns** — multiplier for the cooldown between enemy attacks & bullet patterns
+  - Chapter 4 Enemy Cooldowns is still Work-In-Progress and many encounters won't respect the option currently.
+  - A few tweaks have been made to some attacks:
+    - Reduce random placement of heart shapers (Head Hathy) at lower cooldowns as the attack can trap you.
+    - Cap timer reduction for wave chain (Spade King) as it becomes a solid wall quite quickly.
+    - Shorten tails for chain of hell (Spade King's chain bullets) at lower cooldowns as the attack can trap you.
+    - Ensure Queen's leg stomp attack waits for an available slot before spawning a leg, instead of flooding the box.
 - **Battle Rewards** — multiply post-battle rewards by this value
 - **Down Deficit** — when a party member is downed, their HP is set to -50% max HP; this option overrides that
 - **Downed Regen** — when downed, party members regen 12.5% max HP every turn; this option overrides that
