@@ -11,12 +11,12 @@ global.hp[global.char[i]] -= damage;
 To apply the `Damage Multi` option from Custom Difficulty, your code would look like this:
 ```
 var damage = <some calculation or constant>;
-damage = !is_undefined(global.diff_apply) ? global.diff_apply(DIFFOP.DAMAGE, damage) : damage;
+damage = !is_undefined(global.diff_apply) ? global.diff_apply("DIFFOP_DAMAGE", damage) : damage;
 global.hp[global.char[i]] -= damage;
 ```
 Explaination:
  - Check that the `diff_apply` func exists
- - If exists - apply the difficulty option for damage multi (`DIFFOP.DAMAGE`) to the damage
+ - If exists - apply the difficulty option for damage multi (`"DIFFOP_DAMAGE"`) to the damage
  - Else - make no change to the damage
 
 This way your content will be compatible with Custom Difficulty, but will still work normally if Custom Difficulty is not installed.
@@ -24,26 +24,26 @@ This way your content will be compatible with Custom Difficulty, but will still 
 ## Difficulty Options
 
 There are various difficulty options you can apply via the `diff_apply` function, detailed below.
-- **Damage Multi** — `global.diff_apply(DIFFOP.DAMAGE, damage)`
+- **Damage Multi** — `global.diff_apply("DIFFOP_DAMAGE", damage)`
   - Apply damage multiplier.
-- **Gameboard Dmg X** — `global.diff_apply(DIFFOP.DAMAGE_GB, damage)`
+- **Gameboard Dmg X** — `global.diff_apply("DIFFOP_DAMAGE_GB", damage)`
   - Apply gameboard damage multiplier.
-- **Hit.All** — `global.diff_apply(DIFFOP.HITALL, isHitAll)`
+- **Hit.All** — `global.diff_apply("DIFFOP_HITALL", isHitAll)`
   - Union of Hit.All & input (= Hit.All || isHitAll)
-- **I-Frames** — `global.diff_apply(DIFFOP.IFRAMES, iFrames)`
+- **I-Frames** — `global.diff_apply("DIFFOP_IFRAMES", iFrames)`
   - Apply i-frames multiplier.
-- **Enemy Cooldowns** — `global.diff_apply(DIFFOP.ENEMYCD, cooldown)`
+- **Enemy Cooldowns** — `global.diff_apply("DIFFOP_ENEMYCD", cooldown)`
   - Apply enemy cooldown multiplier.
-- **Gmbrd Enemy CDs** — `global.diff_apply(DIFFOP.ENEMYCD_GB, cooldown)`
+- **Gmbrd Enemy CDs** — `global.diff_apply("DIFFOP_ENEMYCD_GB", cooldown)`
   - Apply gameboard enemy cooldown multiplier.
-- **Battle Rewards** — `global.diff_apply(DIFFOP.REWARDS, reward)`
+- **Battle Rewards** — `global.diff_apply("DIFFOP_REWARDS", reward)`
   - Apply battle rewards multiplier.
-- **Down Deficit** — `global.diff_apply(DIFFOP.DOWNDEF, maxhp)`
+- **Down Deficit** — `global.diff_apply("DIFFOP_DOWNDEF", maxhp)`
   - Get the HP to set the character to, based on their max HP.
   - This is 1/2 in vanilla Deltarune.
-- **Downed Regen** — `global.diff_apply(DIFFOP.DOWNREGEN, maxhp)`
+- **Downed Regen** — `global.diff_apply("DIFFOP_DOWNREGEN", maxhp)`
   - Get the HP to restore each turn, based on their max HP.
   - This is 1/8 in vanilla Deltarune.
-- **Victory Res** — `global.diff_apply(DIFFOP.VICRES, maxhp, hp)`
+- **Victory Res** — `global.diff_apply("DIFFOP_VICRES", maxhp, hp)`
   - Get the HP to set the character to, based on their max HP & current HP.
   - This is 1/8 in vanilla Deltarune.

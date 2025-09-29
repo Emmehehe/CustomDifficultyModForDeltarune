@@ -169,46 +169,31 @@ foreach (string scrName in gamestartLikes)
             global.diff_usepreset_default();
 
             // Provide support for mod devs to add compatibility
-            enum DIFFOP
-            {{
-                DAMAGE,
-                DAMAGE_GB, // gameboard (ch3) only
-                HITALL,
-                IFRAMES,
-                ENEMYCD,
-                ENEMYCD_GB, // gameboard (ch3) only
-                TPGAIN, // hidden option
-                REWARDS,
-                REWARDRANK_GB, // hidden option & gameboard (ch3) only
-                DOWNDEF,
-                DOWNREGEN,
-                VICRES
-            }}
             global.diff_apply = function(arg0, arg1, arg2) {{
                 switch (arg0) {{
-                    case DIFFOP.DAMAGE:
+                    case ""DIFFOP_DAMAGE"":
                     return ceil(global.diff_damagemulti * arg1);
-                    case DIFFOP.DAMAGE_GB:
+                    case ""DIFFOP_DAMAGE_GB"":
                     return (global.diff_gameboarddmgx < 0 ? global.diff_damagemulti : global.diff_gameboarddmgx) * arg1;
-                    case DIFFOP.HITALL:
+                    case ""DIFFOP_HITALL"":
                     return global.diff_hitall || arg1;
-                    case DIFFOP.IFRAMES:
+                    case ""DIFFOP_IFRAMES"":
                     return ceil(global.diff_iframes * arg1);
-                    case DIFFOP.ENEMYCD:
+                    case ""DIFFOP_ENEMYCD"":
                     return round(global.diff_enemycd * arg1);
-                    case DIFFOP.ENEMYCD_GB:
+                    case ""DIFFOP_ENEMYCD_GB"":
                     return ceil((global.diff_gmbrdenemycd < 0 ? global.diff_enemycd : global.diff_gmbrdenemycd) * arg1);
-                    case DIFFOP.TPGAIN:
+                    case ""DIFFOP_TPGAIN"":
                     return ceil(global.diff_tpgain * arg1);
-                    case DIFFOP.REWARDS:
+                    case ""DIFFOP_REWARDS"":
                     return ceil(global.diff_battlerewards * arg1);
-                    case DIFFOP.REWARDRANK_GB:
+                    case ""DIFFOP_REWARDRANK_GB"":
                     return global.diff_rewardranking || arg1;
-                    case DIFFOP.DOWNDEF:
+                    case ""DIFFOP_DOWNDEF"":
                     return max(-999, floor(global.diff_downdeficit * arg1));
-                    case DIFFOP.DOWNREGEN:
+                    case ""DIFFOP_DOWNREGEN"":
                     return ceil(global.diff_downedregen * arg1);
-                    case DIFFOP.VICRES:
+                    case ""DIFFOP_VICRES"":
                     return ceil(global.diff_victoryres >= 0 ? max(1, arg1 * global.diff_victoryres) : arg2);
                 }}
             }}
@@ -371,7 +356,7 @@ foreach (string darkcon in darkcons)
         array_push(formdata, rowdata);
 
         var rowdata = ds_map_create();
-        ds_map_add(rowdata, ""title_en"", ""Enemy Cooldowns"");
+        ds_map_add(rowdata, ""title_en"", ""{(ch_no == 4 ? "WIP: Enemy CDs" : "Enemy Cooldowns")}"");
         ds_map_add(rowdata, ""value_range_en"", ""0~200%"");
         ds_map_add(rowdata, ""value_name"", ""diff_enemycd"");
         ds_map_add(rowdata, ""on_change"", ""diff_usepreset_custom"");
@@ -1090,8 +1075,13 @@ if (ch_no == 1 || ch_no == 0) {
     foreach (string postfix in ch_postfixes)
     {
         // include Lancer overworld attacks
-        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Create_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
-        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = ", "alarm[0] = global.diff_enemycd * ");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Create_0", "alarm[0] = 5", "alarm[0] = ceil(global.diff_enemycd * 5)");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = 5", "alarm[0] = ceil(global.diff_enemycd * 5)");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = 7", "alarm[0] = ceil(global.diff_enemycd * 7)");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = 10", "alarm[0] = ceil(global.diff_enemycd * 10)");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = alarmamt", "alarm[0] = ceil(global.diff_enemycd * alarmamt)");
+        importGroup.QueueFindReplace($"gml_Object_obj_overworld_spademaker{postfix}_Alarm_0", "alarm[0] = 20 + (15 * slow_bonus)",
+            "alarm[0] = ceil(global.diff_enemycd * (20 + (15 * slow_bonus)))");
 
         // include K.Round leap attacks
         importGroup.QueueFindReplace($"gml_Object_obj_checkers_leap{postfix}_Step_0", "jumptimer >= ", "jumptimer >= global.diff_enemycd * ");
@@ -1356,10 +1346,10 @@ if (ch_no == 3) {
     importGroup.QueueFindReplace("gml_Object_obj_knight_slasher_Step_0", "(timer == (6 - diff))", "(timer == ceil(global.diff_enemycd * (6 - diff)))");
     importGroup.QueueFindReplace("gml_Object_obj_knight_slasher_Step_0", "(timer == ((5 - diff) + movespeed))", "(timer == ceil(global.diff_enemycd * ((5 - diff) + movespeed)))");
     importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_3", "timer = -8;", "timer = floor(global.diff_enemycd * -8);");
-    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_2", "alarm[4] = 26;", "alarm[4] = global.diff_enemycd * 26;");
-    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_5", "alarm[0] = 8;", "alarm[0] = global.diff_enemycd * 8;");
-    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Step_0", "alarm\\[([0-9]+)\\] = ([0-9]+);", "alarm[$1] = global.diff_enemycd * $2;");
-    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Other_10", "alarm\\[([0-9]+)\\] = ([0-9]+);", "alarm[$1] = global.diff_enemycd * $2;");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_2", "alarm[4] = 26;", "alarm[4] = ceil(global.diff_enemycd * 26);");
+    importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Alarm_5", "alarm[0] = 8;", "alarm[0] = ceil(global.diff_enemycd * 8);");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Step_0", "alarm\\[([0-9]+)\\] = ([0-9]+);", "alarm[$1] = ceil(global.diff_enemycd * $2);");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Other_10", "alarm\\[([0-9]+)\\] = ([0-9]+);", "alarm[$1] = ceil(global.diff_enemycd * $2);");
     importGroup.QueueRegexFindReplace("gml_Object_obj_knight_swordfall_Create_0", "countdown = ([0-9]+);", "countdown = ceil(global.diff_enemycd * $1);");
     importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Step_0", "countdown = countdowner - irandom(1);", "countdown = ceil(global.diff_enemycd * (countdowner - irandom(1)));");
     importGroup.QueueFindReplace("gml_Object_obj_knight_swordfall_Step_0", "countdown = countdowner;", "countdown = ceil(global.diff_enemycd * countdowner);");
