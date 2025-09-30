@@ -67,7 +67,7 @@ Difficulty options for DELTARUNE. Make the game easy, hard, or nightmare! ( or n
 
 **Demo** — custom-difficulty-drmod-demo-{version number}.zip
 
-## Installation without Deltamod
+## Installation without a mod-manager
 
 ### Windows
 **Quick start**
