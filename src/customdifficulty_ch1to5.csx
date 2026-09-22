@@ -3017,9 +3017,11 @@ if (ch_no == 5) {
 
     string one_over_mercy = "(global.diff_mercy <= 0 ? 1 : (1/global.diff_mercy))";
     importGroup.QueueFindReplace("gml_Object_obj_trashy_hoop_Create_0", "damage += arg0;", "damage += ceil(global.diff_mercy * arg0);");
-    importGroup.QueueFindReplace("gml_Object_obj_trashy_hoop_Create_0", "99, arg0);", "99, ceil(global.diff_mercy * arg0));");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_trashy_hoop_Create_0", @"scr_approach\(global\.mercymod\[obj_trashy_trio\.myself\], (\d+), arg0\);",
+        "scr_approach(global.mercymod[obj_trashy_trio.myself], $1, ceil(global.diff_mercy * arg0));");
     importGroup.QueueFindReplace("gml_Object_obj_trashy_broom_Step_0", "damage++;", "damage += ceil(global.diff_mercy);");
-    importGroup.QueueFindReplace("gml_Object_obj_trashy_broom_Step_0", "99, 1);", "99, ceil(global.diff_mercy));");
+    importGroup.QueueRegexFindReplace("gml_Object_obj_trashy_broom_Step_0", @"scr_approach\(global\.mercymod\[obj_trashy_trio\.myself\], (\d+), 1\);",
+        "scr_approach(global.mercymod[obj_trashy_trio.myself], $1, ceil(global.diff_mercy));");
     importGroup.QueueFindReplace("gml_Object_obj_flowery_enemy_Step_0", "global.mercymod[myself] += 10;", "global.mercymod[myself] += ceil(global.diff_mercy * 10);");
     // Leave disabled, casues flowery soft-lock: importGroup.QueueFindReplace("gml_Object_obj_yellow_trial_manager_Create_0", "global.mercymod[myself] += 10;", "global.mercymod[myself] += ceil(global.diff_mercy * 10);");
     importGroup.QueueFindReplace("gml_Object_obj_monster1_Step_0", "global.mercymod[myself] += 120;", "global.mercymod[myself] += ceil(global.diff_mercy * 120);");

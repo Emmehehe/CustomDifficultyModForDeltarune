@@ -20,7 +20,7 @@ if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, Ti
 }
 
 // detect version
-string[] checkVersions = {"v2_0_2", "v2_0_1", "v2_0_0"/*, "v2_0_beta_2"*/};
+string[] checkVersions = {"v2_0_3", "v2_0_2", "v2_0_1", "v2_0_0"/*, "v2_0_beta_2"*/};
 string latestVersion = checkVersions[0];
 string detectedVersion = "not-installed";
 bool freshInstall = true;
@@ -82,10 +82,9 @@ if (!freshInstall && detectedVersion != latestVersion) {
     }
 
     switch (detectedVersion) {
+        case "v2_0_2":
         case "v2_0_1":
         case "v2_0_0":
-            // no other changes needed
-            break;
         case "v2_0_beta_2":
             {
                 string[] copyLikes = {"gml_Object_DEVICE_MENU_Other_15"};
@@ -1818,7 +1817,7 @@ if (freshInstall)
     }
 }
 
-if (freshInstall || detectedVersion == "v2_0_beta_2")
+if (freshInstall || detectedVersion == "v2_0_beta_2" || detectedVersion == "v2_0_2" || detectedVersion == "v2_0_1" || detectedVersion == "v2_0_0")
 {
     // Copy menu data
     string[] copyLikes = {"gml_Object_DEVICE_MENU_Other_15"};
@@ -1829,11 +1828,19 @@ if (freshInstall || detectedVersion == "v2_0_beta_2")
     }
     foreach (string scrName in copyLikes)
     {
-        importGroup.QueueFindReplace(scrName, @"if (file_exists(""keyconfig_"" + string(MENUCOORD[2]) + "".ini""))", @"
-            global.modmenu.copy(MENUCOORD[2], MENUCOORD[3]);
+        if (ch_no == 1 || scrName == "gml_Object_DEVICE_MENU_ch1_Other_15") {
+            importGroup.QueueFindReplace(scrName, @"file_copy(""filech1_"" + string(MENUCOORD[2]), ""filech1_"" + string(MENUCOORD[3]));", @"
+                file_copy(""filechch1_"" + string(MENUCOORD[2]), ""filechch1_"" + string(MENUCOORD[3]));
 
-            if (file_exists(""keyconfig_"" + string(MENUCOORD[2]) + "".ini""))
-        ");
+                global.modmenu.copy(MENUCOORD[2], MENUCOORD[3]);
+            ");
+        } else {
+            importGroup.QueueFindReplace(scrName, @"file_copy(""filech"" + CH + ""_"" + string(MENUCOORD[2]), ""filech"" + CH + ""_"" + string(MENUCOORD[3]));", @"
+                file_copy(""filech"" + CH + ""_"" + string(MENUCOORD[2]), ""filech"" + CH + ""_"" + string(MENUCOORD[3]));
+
+                global.modmenu.copy(MENUCOORD[2], MENUCOORD[3]);
+            ");
+        }
     }
 }
 
