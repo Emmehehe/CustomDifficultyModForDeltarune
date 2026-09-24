@@ -20,7 +20,7 @@ if (!Regex.IsMatch(displayName, expectedDisplayName, RegexOptions.IgnoreCase, Ti
 }
 
 // detect version
-string[] checkVersions = {"v2_0_3", "v2_0_2", "v2_0_1", "v2_0_0"/*, "v2_0_beta_2"*/};
+string[] checkVersions = {"v2_0_4", "v2_0_3", "v2_0_2", "v2_0_1", "v2_0_0"/*, "v2_0_beta_2"*/};
 string latestVersion = checkVersions[0];
 string detectedVersion = "not-installed";
 bool freshInstall = true;
@@ -1830,7 +1830,7 @@ if (freshInstall || detectedVersion == "v2_0_beta_2" || detectedVersion == "v2_0
     {
         if (ch_no == 1 || scrName == "gml_Object_DEVICE_MENU_ch1_Other_15") {
             importGroup.QueueFindReplace(scrName, @"file_copy(""filech1_"" + string(MENUCOORD[2]), ""filech1_"" + string(MENUCOORD[3]));", @"
-                file_copy(""filechch1_"" + string(MENUCOORD[2]), ""filechch1_"" + string(MENUCOORD[3]));
+                file_copy(""filech1_"" + string(MENUCOORD[2]), ""filech1_"" + string(MENUCOORD[3]));
 
                 global.modmenu.copy(MENUCOORD[2], MENUCOORD[3]);
             ");
@@ -1841,6 +1841,17 @@ if (freshInstall || detectedVersion == "v2_0_beta_2" || detectedVersion == "v2_0
                 global.modmenu.copy(MENUCOORD[2], MENUCOORD[3]);
             ");
         }
+    }
+}
+
+if ((ch_no == 1 || ch_no == 0) && !freshInstall && detectedVersion == "v2_0_3")
+{
+    if (ch_no == 0){
+        importGroup.QueueFindReplace("gml_Object_DEVICE_MENU_ch1_Other_15", @"file_copy(""filechch1_"" + string(MENUCOORD[2]), ""filechch1_"" + string(MENUCOORD[3]));",
+            @"file_copy(""filech1_"" + string(MENUCOORD[2]), ""filech1_"" + string(MENUCOORD[3]));");
+    } else {
+        importGroup.QueueFindReplace("gml_Object_DEVICE_MENU_Other_15", @"file_copy(""filechch1_"" + string(MENUCOORD[2]), ""filechch1_"" + string(MENUCOORD[3]));",
+            @"file_copy(""filech1_"" + string(MENUCOORD[2]), ""filech1_"" + string(MENUCOORD[3]));");
     }
 }
 
